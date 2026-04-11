@@ -78,7 +78,7 @@ class GroceryItems extends StatelessWidget {
                 ),
               ),
               Text(
-                "${grocery['price']} /${getUnit(grocery['category'])}",
+                "${grocery['price'] ?? '0.00'} /${getUnit(grocery['category'])}",
                 style: TextStyle(
                   fontSize: 18, 
                   color: Colors.black,

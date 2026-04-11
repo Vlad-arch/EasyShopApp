@@ -5,9 +5,7 @@ import 'package:easyshop/Widgets/cart_icon.dart';
 import 'package:easyshop/Widgets/grocery_items.dart';
 import 'package:easyshop/Widgets/my_search_bar.dart';
 import 'package:easyshop/utils/colors.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:easyshop/utils/colors.dart';
 import 'package:easyshop/utils/github_helper.dart';
 
 class HomePage extends StatefulWidget{
@@ -21,6 +19,8 @@ class _HomePageState extends State<HomePage> {
   String category = '';
   List<Map<String,dynamic>> groceryItems = [];
   List<Map<String,dynamic>> groceryCategory = [];
+  List<Map<String,dynamic>> filteredItems = [];
+  List<Map<String,dynamic>> allProducts = [];
   
   bool isLoading = true;
   @override
@@ -31,6 +31,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> fetchData() async {
     await fetchCategory();
+    await fetchAllProducts(); // Carica tutti i prodotti per i suggerimenti
     if (groceryCategory.isNotEmpty) {
       category = groceryCategory[0]["name"]; 
       await filterProductByCategory(category);
@@ -40,12 +41,32 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> fetchAllProducts() async {
+    try {
+      QuerySnapshot<Map<String, dynamic>> snapshot = 
+        await FirebaseFirestore.instance.collection("product").get();
+      setState(() {
+        allProducts = snapshot.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return data;
+        }).toList();
+      });
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
   Future<void> fetchCategory() async {
     try {
       QuerySnapshot<Map<String, dynamic>> snapshot = 
         await FirebaseFirestore.instance.collection("Category").get();
       setState(() {
-        groceryCategory = snapshot.docs.map((docs) => docs.data()).toList();
+        groceryCategory = snapshot.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return data;
+        }).toList();
       });
     } catch (e) {
       print(e.toString());
@@ -64,14 +85,31 @@ class _HomePageState extends State<HomePage> {
       .get();
     setState(() {
         category = selectedCategory;
-        groceryItems = snapshot.docs.map((docs) => docs.data()).toList();
+        groceryItems = snapshot.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return data;
+        }).toList();
+        filteredItems = groceryItems;
       });
     } catch (e) {
       print(e.toString());
     }
-    finally{
+  }
+
+  void searchProducts(String query) {
+    if (query.isEmpty) {
       setState(() {
-        isLoading = false;
+        filteredItems = groceryItems;
+      });
+    } else {
+      setState(() {
+        filteredItems = groceryItems
+            .where((item) => item['name']
+                .toString()
+                .toLowerCase()
+                .contains(query.toLowerCase()))
+            .toList();
       });
     }
   }
@@ -80,7 +118,8 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: AppColors.secondaryColor,
       body: SafeArea(
-        child: Column(
+        child: SingleChildScrollView(
+          child: Column(
           children: [
             const Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -124,7 +163,16 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: MySearchBar(
-                onSearch: (p) {},
+                suggestions: allProducts,
+                onSearch: searchProducts,
+                onSuggestionSelected: (product) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ItemDetailsScreen(grocery: product),
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 20),
@@ -261,12 +309,12 @@ class _HomePageState extends State<HomePage> {
                   ) 
               ],
             ),
-            groceryItems.isEmpty 
+            filteredItems.isEmpty 
               ? Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 30),
                     child: Text(
-                      "No products available in this category", 
+                      "No products found", 
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
@@ -277,7 +325,7 @@ class _HomePageState extends State<HomePage> {
                 : SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                     child: Row(children:List.generate(
-                      groceryItems.length, 
+                      filteredItems.length, 
                       (index) {
                         return Padding(
                           padding: const EdgeInsets.only
@@ -291,13 +339,13 @@ class _HomePageState extends State<HomePage> {
                                 context, 
                                 MaterialPageRoute(
                                   builder: (context) => ItemDetailsScreen(
-                                    grocery: groceryItems[index],
+                                    grocery: filteredItems[index],
                                   ),
                                 ),
                               );
                             },
                             child: GroceryItems(
-                              grocery: groceryItems[index],
+                              grocery: filteredItems[index],
                             ),
                           ),
                         );
@@ -307,7 +355,8 @@ class _HomePageState extends State<HomePage> {
                 ),   
           ],
         ),
-      )
+      ),
+     ),
     );      
   }
 }

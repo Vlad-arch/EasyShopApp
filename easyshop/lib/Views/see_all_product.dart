@@ -29,7 +29,7 @@ class _SeeAllProductState extends State<SeeAllProduct> {
     });
     try {
       QuerySnapshot<Map<String, dynamic>> snapshot = 
-        await FirebaseFirestore.instance.collection("Category").get();
+        await FirebaseFirestore.instance.collection("product").get();
       setState(() {
         groceryItems = snapshot.docs.map((docs) => docs.data()).toList();
         filterItems = groceryItems;
@@ -95,7 +95,18 @@ class _SeeAllProductState extends State<SeeAllProduct> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  MySearchBar(onSearch: searchfilterItems),
+                  MySearchBar(
+                    suggestions: groceryItems,
+                    onSearch: searchfilterItems,
+                    onSuggestionSelected: (product) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ItemDetailsScreen(grocery: product),
+                        ),
+                      );
+                    },
+                  ),
                   const SizedBox(height: 10),
                   SizedBox(
                     height: 720,

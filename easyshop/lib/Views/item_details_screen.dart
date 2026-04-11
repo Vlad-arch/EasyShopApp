@@ -4,6 +4,7 @@ import 'package:easyshop/Widgets/unit_conversion.dart';
 import 'package:easyshop/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easyshop/utils/github_helper.dart';
 
 class ItemDetailsScreen extends StatelessWidget{
   final Map<String, dynamic> grocery;
@@ -39,14 +40,14 @@ class ItemDetailsScreen extends StatelessWidget{
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.network(
-              grocery['image'],
+              GithubHelper.convertUrl(grocery['image']),
               height: 350,
               width: 350,
               fit: BoxFit.cover,
             ),
             const SizedBox(height: 10),
             Text(
-              grocery['name'],
+              grocery['name'] ?? "Unknown Product",
               style: const TextStyle(
                 fontSize: 27,
                 color: Colors.black,
@@ -64,7 +65,7 @@ class ItemDetailsScreen extends StatelessWidget{
                 ),
                 const SizedBox(width: 5),
                 Text(
-                  grocery['rating'].toString(),
+                  (grocery['rating'] ?? 0.0).toString(),
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.black,
@@ -73,7 +74,7 @@ class ItemDetailsScreen extends StatelessWidget{
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  "${grocery['price']} /${getUnit(grocery['category'])}",
+                  "${grocery['price'] ?? '0.00'} /${getUnit(grocery['category'])}",
                   style: const TextStyle(
                     fontSize: 22,
                     color: Colors.red,
@@ -84,7 +85,7 @@ class ItemDetailsScreen extends StatelessWidget{
                 ],
               ),
               Text(
-                  grocery['category'],
+                  grocery['category'] ?? "No Category",
                   style: const TextStyle(
                     fontSize: 18,
                     color: AppColors.primaryColor,
@@ -109,16 +110,25 @@ class ItemDetailsScreen extends StatelessWidget{
                 padding: EdgeInsets.symmetric(horizontal: 15),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: (grocery['description'] as List<dynamic>?)
-                    ?.map((item) => Text(
-                          item.toString(),
-                          style: TextStyle(
+                  children: (grocery['description'] is List)
+                    ? (grocery['description'] as List<dynamic>)
+                        .map((item) => Text(
+                              item.toString(),
+                              style: const TextStyle(
+                                fontSize: 17,
+                                color: Colors.black,
+                              ),
+                            ))
+                        .toList()
+                    : [
+                        Text(
+                          grocery['description']?.toString() ?? "No description available",
+                          style: const TextStyle(
                             fontSize: 17,
                             color: Colors.black,
                           ),
-                        ))
-                      .toList() ??
-                    [const Text("No description available")]),
+                        )
+                      ]),
               ),
               SizedBox(height: 30),
               Column(
