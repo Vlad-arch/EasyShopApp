@@ -8,7 +8,7 @@ import 'package:easyshop/utils/colors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:easyshop/utils/colors.dart';
-import 'package:easyshop/utils/drive_helper.dart';
+import 'package:easyshop/utils/github_helper.dart';
 
 class HomePage extends StatefulWidget{
   const HomePage({super.key});
@@ -197,7 +197,7 @@ class _HomePageState extends State<HomePage> {
                                   color: AppColors.primaryColor,
                                   image: DecorationImage(
                                     image: NetworkImage(
-                                      DriveHelper.convertUrl(groceryCategory[index]['image']),
+                                      GithubHelper.convertUrl(groceryCategory[index]['image']),
                                     ),
                                   ),
                                 ),

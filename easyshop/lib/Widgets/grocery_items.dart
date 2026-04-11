@@ -4,7 +4,7 @@ import 'package:easyshop/Widgets/unit_conversion.dart';
 import 'package:easyshop/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:easyshop/utils/drive_helper.dart';
+import 'package:easyshop/utils/github_helper.dart';
 
 class GroceryItems extends StatelessWidget { 
   final Map<String, dynamic> grocery;
@@ -50,7 +50,7 @@ class GroceryItems extends StatelessWidget {
               image: DecorationImage(
                 fit: BoxFit.cover,
                 image: NetworkImage(
-                  DriveHelper.convertUrl(grocery['image']),
+                  GithubHelper.convertUrl(grocery['image']),
                 ),
               ),
             ),
