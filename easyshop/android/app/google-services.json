@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "241097813370",
+    "project_id": "easyshop-983ad",
+    "storage_bucket": "easyshop-983ad.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241097813370:android:91e350ae79c9ed46fc3ac3",
+        "android_client_info": {
+          "package_name": "com.example.easyshop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "241097813370-f1n9j8873f4jjoootu8sd5627p2oqi2p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCd_dOsUnEj9kgbvGFgrPxvfPnx36lp1P0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "241097813370-f1n9j8873f4jjoootu8sd5627p2oqi2p.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "241097813370-s7tj7l6rjfnje9sfdr5i8h24l6o1430e.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.easyshop"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
