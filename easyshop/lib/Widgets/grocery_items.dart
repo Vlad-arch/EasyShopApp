@@ -135,6 +135,13 @@ class GroceryItems extends StatelessWidget {
                   child: GestureDetector( 
                     onTap: () {
                       cartProvider.addCart(grocery);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("${grocery['name']} added to cart!"),
+                          duration: const Duration(seconds: 1),
+                          backgroundColor: AppColors.primaryColor,
+                        ),
+                      );
                     },
                     child: const Icon(
                       Icons.shopping_cart,

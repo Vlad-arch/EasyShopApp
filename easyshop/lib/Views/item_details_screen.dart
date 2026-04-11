@@ -1,10 +1,11 @@
 import 'package:easyshop/Provider/cart_provider.dart';
+import 'package:easyshop/Provider/favorite_provider.dart';
 import 'package:easyshop/Widgets/cart_icon.dart';
 import 'package:easyshop/Widgets/unit_conversion.dart';
 import 'package:easyshop/utils/colors.dart';
+import 'package:easyshop/utils/github_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:easyshop/utils/github_helper.dart';
 
 class ItemDetailsScreen extends StatelessWidget{
   final Map<String, dynamic> grocery;
@@ -26,11 +27,26 @@ class ItemDetailsScreen extends StatelessWidget{
           ),
         ),
         actions: [
+          Consumer<FavoriteProvider>(
+            builder: (context, provider, child) {
+              return IconButton(
+                onPressed: () {
+                  provider.toggleFavorite(grocery);
+                },
+                icon: Icon(
+                  provider.isExist(grocery)
+                      ? Icons.favorite
+                      : Icons.favorite_border,
+                  color: provider.isExist(grocery) ? Colors.red : Colors.black,
+                ),
+              );
+            },
+          ),
           IconButton(
             onPressed: () {},
             icon: const CartIcon(),
           ),
-          SizedBox(width: 10)
+          const SizedBox(width: 10)
         ],
       ),
       body: SingleChildScrollView(
@@ -169,6 +185,13 @@ class ItemDetailsScreen extends StatelessWidget{
                       child: GestureDetector(
                         onTap: () {
                           cartProvider.addCart(grocery);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("${grocery['name']} added to cart!"),
+                              duration: const Duration(seconds: 1),
+                              backgroundColor: AppColors.primaryColor,
+                            ),
+                          );
                         },
                         child: const Text(
                           "Add to Cart",

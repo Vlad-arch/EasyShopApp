@@ -239,11 +239,17 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Container(
                                 height: 70, 
-                                width: 70, 
+                                width: 70,
+                                padding: const EdgeInsets.all(5),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle, 
-                                  color: AppColors.primaryColor,
+                                  color: Colors.white,
+                                  border: Border.all(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    width: 1,
+                                  ),
                                   image: DecorationImage(
+                                    fit: BoxFit.contain,
                                     image: NetworkImage(
                                       GithubHelper.convertUrl(groceryCategory[index]['image']),
                                     ),

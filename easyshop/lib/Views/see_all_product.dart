@@ -31,7 +31,11 @@ class _SeeAllProductState extends State<SeeAllProduct> {
       QuerySnapshot<Map<String, dynamic>> snapshot = 
         await FirebaseFirestore.instance.collection("product").get();
       setState(() {
-        groceryItems = snapshot.docs.map((docs) => docs.data()).toList();
+        groceryItems = snapshot.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return data;
+        }).toList();
         filterItems = groceryItems;
         isLoading = false;
       });

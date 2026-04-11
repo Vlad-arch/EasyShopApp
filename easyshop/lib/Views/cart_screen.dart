@@ -13,6 +13,8 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  bool isEcoFriendly = true;
+
   @override
   Widget build(BuildContext context) {
     CartProvider cartProvider = Provider.of<CartProvider>(context);
@@ -35,25 +37,14 @@ class _CartScreenState extends State<CartScreen> {
       ),
       body: SafeArea(child: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: SizedBox(
-            height: size.height * 0.5,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              physics: BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: List.generate(
-                carts.length, 
-                (index) => SizedBox(
-                  height: 100,
-                  width: size.width,
-                  child: CartItems(
-                    cart: carts[index]
-                  ),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: List.generate(
+              carts.length, 
+              (index) => CartItems(
+                  cart: carts[index]
                 ),
-              ),
-            ),
             ),
           ),
         ),
@@ -96,24 +87,23 @@ class _CartScreenState extends State<CartScreen> {
                   ],
                 ),
                 const Divider(),
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Checkbox(
-                      value: true, 
-                      onChanged: null,
-                      activeColor: AppColors.primaryColor,
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Icon(Icons.delivery_dining, color: AppColors.primaryColor),
                     ),
-                    Text(
-                      "Delevery charge",
+                    const Text(
+                      "Delivery charge",
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
-                    Spacer(),
-                    Text(
+                    const Spacer(),
+                    const Text(
                       "\$4.99", 
                       style: TextStyle(
                         fontSize: 20,
@@ -126,9 +116,13 @@ class _CartScreenState extends State<CartScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    const Checkbox(
-                      value: true, 
-                      onChanged: null,
+                    Checkbox(
+                      value: isEcoFriendly, 
+                      onChanged: (value) {
+                        setState(() {
+                          isEcoFriendly = value ?? false;
+                        });
+                      },
                       activeColor: AppColors.primaryColor,
                     ),
                     const Text(
@@ -172,7 +166,7 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                     ),
                     Text(
-                      "\$${(cartProvider.totalCart() +4.99 + 0.1 * carts.length).toStringAsFixed(2)}",
+                      "\$${(cartProvider.totalCart() + 4.99 + (isEcoFriendly ? (0.1 * carts.length) : 0.0)).toStringAsFixed(2)}",
                       style: const TextStyle(
                         fontSize: 20,
                        fontWeight: FontWeight.bold,
@@ -182,27 +176,41 @@ class _CartScreenState extends State<CartScreen> {
                   ],
                 ),
                 const SizedBox(height: 15),
-                Container(
-                  height: 55,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryColor,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.7),
-                        spreadRadius: 2, 
-                        blurRadius: 7,
-                        offset: const Offset(0, 2),
-                      )
-                    ]
-                  ),
-                  child: const Text(
-                    "Process to checkout",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                GestureDetector(
+                  onTap: () {
+                    // 1. Mostra il messaggio di conferma
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Il tuo ordine è stato elaborato, lo riceverai al più presto."),
+                        duration: Duration(seconds: 3),
+                        backgroundColor: AppColors.primaryColor,
+                      ),
+                    );
+                    // 2. Svuota il carrello
+                    cartProvider.clearCart();
+                  },
+                  child: Container(
+                    height: 55,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.7),
+                          spreadRadius: 2, 
+                          blurRadius: 7,
+                          offset: const Offset(0, 2),
+                        )
+                      ]
+                    ),
+                    child: const Text(
+                      "Process to checkout",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 )

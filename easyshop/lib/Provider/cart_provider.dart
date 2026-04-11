@@ -60,8 +60,15 @@ class CartProvider with ChangeNotifier {
   double totalCart(){
     double total = 0;
     for(var i = 0; i < _carts.length; i++) {
-      total += _carts[i].quantity * double.parse(_carts[i].grocery['price'].toString());
+      final priceStr = _carts[i].grocery['price']?.toString() ?? "0.0";
+      final price = double.tryParse(priceStr) ?? 0.0;
+      total += _carts[i].quantity * price;
     } 
     return total;
+  }
+
+  void clearCart() {
+    _carts = [];
+    notifyListeners();
   }
 }

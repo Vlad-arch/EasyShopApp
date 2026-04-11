@@ -1,6 +1,7 @@
 import 'package:easyshop/Provider/Model/cart_model.dart';
 import 'package:easyshop/Provider/cart_provider.dart';
 import 'package:easyshop/utils/colors.dart';
+import 'package:easyshop/utils/github_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -30,7 +31,7 @@ class CartItems extends StatelessWidget{
                 image: DecorationImage(
                   fit: BoxFit.cover,
                   image: NetworkImage(
-                    cart.grocery['image'],
+                    GithubHelper.convertUrl(cart.grocery['image']),
                   ), 
                 ),
               ),
@@ -43,7 +44,7 @@ class CartItems extends StatelessWidget{
                   Container(
                     margin: const EdgeInsets.only(left: 10),
                     child: Text(
-                      cart.grocery['name'],
+                      cart.grocery['name'] ?? "Unknown",
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -70,7 +71,7 @@ class CartItems extends StatelessWidget{
                               ),
                             ),
                             Text(
-                              cart.grocery['price'],
+                              cart.grocery['price']?.toString() ?? "0.00",
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
