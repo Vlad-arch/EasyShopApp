@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easyshop/Views/category_screen.dart';
 import 'package:easyshop/Views/item_details_screen.dart';
 import 'package:easyshop/Views/see_all_product.dart';
 import 'package:easyshop/Widgets/cart_icon.dart';
@@ -179,26 +180,39 @@ class _HomePageState extends State<HomePage> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Row(
                     children: [
-                      Text(
-                        "Caregory",
+                      const Text(
+                        "Categories",
                         style: TextStyle(
                           fontSize: 23,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      Spacer(),
-                      Text(
-                        "See All",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () async {
+                          final selectedCategory = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CategoryScreen(),
+                            ),
+                          );
+                          if (selectedCategory != null && selectedCategory is String) {
+                            filterProductByCategory(selectedCategory);
+                          }
+                        },
+                        child: const Text(
+                          "See All",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      Icon(
+                      const Icon(
                         Icons.keyboard_arrow_right,
                         color: Colors.black,
                       )
@@ -281,8 +295,8 @@ class _HomePageState extends State<HomePage> {
                     padding: EdgeInsets.symmetric(horizontal: 15),
                     child: Row(
                       children: [
-                        Text(
-                          "Caregory",
+                        const Text(
+                          "Products",
                           style: TextStyle(
                             fontSize: 23,
                             fontWeight: FontWeight.w600,

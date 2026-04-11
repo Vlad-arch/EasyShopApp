@@ -181,7 +181,7 @@ class _CartScreenState extends State<CartScreen> {
                     // 1. Mostra il messaggio di conferma
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text("Il tuo ordine è stato elaborato, lo riceverai al più presto."),
+                        content: Text("Your order has been processed, you will receive it as soon as possible."),
                         duration: Duration(seconds: 3),
                         backgroundColor: AppColors.primaryColor,
                       ),
