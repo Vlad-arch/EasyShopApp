@@ -8,6 +8,7 @@ import 'package:easyshop/Widgets/my_search_bar.dart';
 import 'package:easyshop/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:easyshop/utils/github_helper.dart';
+import 'package:easyshop/auth.dart';
 
 class HomePage extends StatefulWidget{
   const HomePage({super.key});
@@ -122,26 +123,36 @@ class _HomePageState extends State<HomePage> {
         child: SingleChildScrollView(
           child: Column(
           children: [
-            const Padding(
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: Row(
                 children: [
-                  Text.rich(
-                    TextSpan(
-                      style: 
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
-                      children: [
-                        TextSpan(text: "Hello,"),
+                  StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance.collection('users').doc(Auth().currentUser?.uid).snapshots(),
+                    builder: (context, snapshot) {
+                      String name = "User";
+                      if (snapshot.hasData && snapshot.data!.exists) {
+                        final data = snapshot.data!.data() as Map<String, dynamic>?;
+                        name = data?['name'] ?? "User";
+                      }
+                      return Text.rich(
                         TextSpan(
-                          text: "Smith\n",
-                          style: TextStyle(color: AppColors.primaryColor),
+                          style: 
+                            const TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
+                          children: [
+                            const TextSpan(text: "Hello, "),
+                            TextSpan(
+                              text: "$name\n",
+                              style: const TextStyle(color: AppColors.primaryColor),
+                            ),
+                            const TextSpan(
+                              text: "What do you need?",
+                              style: TextStyle(fontSize: 17, color: Colors.black),
+                            ),
+                          ],
                         ),
-                        TextSpan(
-                          text: "What do you nedd",
-                          style: TextStyle(fontSize: 17, color: Colors.black),
-                        ),
-                      ],
-                    ),
+                      );
+                    }
                   ),
                   Spacer(),
                 CartIcon(),  
@@ -308,7 +319,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.push(
                               context, 
                               MaterialPageRoute(
-                                builder: (context) => const SeeAllProduct(),
+                                builder: (context) => SeeAllProduct(category: category),
                                 ),
                               );
                           },
@@ -364,8 +375,12 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               );
                             },
-                            child: GroceryItems(
-                              grocery: filteredItems[index],
+                            child: SizedBox(
+                              width: 192,
+                              height: 290,
+                              child: GroceryItems(
+                                grocery: filteredItems[index],
+                              ),
                             ),
                           ),
                         );

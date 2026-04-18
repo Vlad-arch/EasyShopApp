@@ -2,6 +2,7 @@ import 'package:easyshop/Provider/Model/cart_model.dart';
 import 'package:easyshop/Provider/cart_provider.dart';
 import 'package:easyshop/Views/Widgets/cart_items.dart';
 import 'package:easyshop/utils/colors.dart';
+import 'package:easyshop/Views/shipping_address_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -178,16 +179,12 @@ class _CartScreenState extends State<CartScreen> {
                 const SizedBox(height: 15),
                 GestureDetector(
                   onTap: () {
-                    // 1. Mostra il messaggio di conferma
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Your order has been processed, you will receive it as soon as possible."),
-                        duration: Duration(seconds: 3),
-                        backgroundColor: AppColors.primaryColor,
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ShippingAddressScreen(),
                       ),
                     );
-                    // 2. Svuota il carrello
-                    cartProvider.clearCart();
                   },
                   child: Container(
                     height: 55,

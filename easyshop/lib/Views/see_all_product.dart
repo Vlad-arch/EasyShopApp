@@ -7,7 +7,8 @@ import 'package:easyshop/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class SeeAllProduct extends StatefulWidget {
-  const SeeAllProduct({super.key});
+  final String? category;
+  const SeeAllProduct({super.key, this.category});
 
   @override
   State<SeeAllProduct> createState() => _SeeAllProductState();
@@ -28,8 +29,13 @@ class _SeeAllProductState extends State<SeeAllProduct> {
       isLoading = true;
     });
     try {
-      QuerySnapshot<Map<String, dynamic>> snapshot = 
-        await FirebaseFirestore.instance.collection("product").get();
+      Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection("product");
+      
+      if (widget.category != null && widget.category!.isNotEmpty) {
+        query = query.where('category', isEqualTo: widget.category);
+      }
+
+      QuerySnapshot<Map<String, dynamic>> snapshot = await query.get();
       setState(() {
         groceryItems = snapshot.docs.map((doc) {
           final data = doc.data();
@@ -74,8 +80,10 @@ class _SeeAllProductState extends State<SeeAllProduct> {
           elevation: 0,
           centerTitle: true,
           title: Text(
-            "All Grocery Product",
-            style: TextStyle(
+            widget.category != null && widget.category!.isNotEmpty 
+                ? "Products in ${widget.category}" 
+                : "All Grocery Product",
+            style: const TextStyle(
               color: Colors.black,
             ),
           ),
@@ -91,8 +99,7 @@ class _SeeAllProductState extends State<SeeAllProduct> {
         ? const Center(
             child: CircularProgressIndicator(),
           )
-        : SingleChildScrollView(
-          child: SafeArea(
+        : SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(15),
               child: Column(
@@ -112,9 +119,7 @@ class _SeeAllProductState extends State<SeeAllProduct> {
                     },
                   ),
                   const SizedBox(height: 10),
-                  SizedBox(
-                    height: 720,
-                    width: double.maxFinite,
+                  Expanded(
                     child: GridView.builder(
                       itemCount: filterItems.length,
                         gridDelegate:
@@ -131,7 +136,7 @@ class _SeeAllProductState extends State<SeeAllProduct> {
                                 context, 
                                 MaterialPageRoute(
                                   builder: (context) => ItemDetailsScreen(
-                                    grocery: groceryItems[index],
+                                    grocery: filterItems[index],
                                   ),
                                 ),
                               );
@@ -147,7 +152,6 @@ class _SeeAllProductState extends State<SeeAllProduct> {
                   ),
                 ),
               ),
-            ),
         );
   }
 }

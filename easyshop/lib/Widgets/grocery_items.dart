@@ -15,11 +15,9 @@ class GroceryItems extends StatelessWidget {
     final provider = Provider.of<FavoriteProvider>(context);
     CartProvider cartProvider = Provider.of<CartProvider>(context);
     return Container(
-      width: 192,
-      height: 290,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
             Colors.white,
             Color(0xffF7FFF7),
@@ -27,7 +25,7 @@ class GroceryItems extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.grey,
             spreadRadius: 0,
@@ -37,20 +35,20 @@ class GroceryItems extends StatelessWidget {
         ]
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            height: 173,
-            width: double.maxFinite,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(25),
-              ),
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: NetworkImage(
-                  GithubHelper.convertUrl(grocery['image']),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(25),
+                ),
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: NetworkImage(
+                    GithubHelper.convertUrl(grocery['image']),
+                  ),
                 ),
               ),
             ),
@@ -68,7 +66,7 @@ class GroceryItems extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
+              const Text(
                 "\$",
                 style: TextStyle(
                   fontSize: 22, 
@@ -79,7 +77,7 @@ class GroceryItems extends StatelessWidget {
               ),
               Text(
                 "${grocery['price'] ?? '0.00'} /${getUnit(grocery['category'])}",
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18, 
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
@@ -127,7 +125,7 @@ class GroceryItems extends StatelessWidget {
                   width: 50,
                   decoration: const BoxDecoration(
                     color: AppColors.primaryColor,                   
-                    borderRadius: const BorderRadius.only(
+                    borderRadius: BorderRadius.only(
                       bottomRight: Radius.circular(25),
                       topLeft: Radius.circular(30),
                     ),
