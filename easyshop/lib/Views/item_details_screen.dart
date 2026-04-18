@@ -1,4 +1,5 @@
 import 'package:easyshop/Provider/cart_provider.dart';
+import 'package:easyshop/Views/cart_screen.dart';
 import 'package:easyshop/Provider/favorite_provider.dart';
 import 'package:easyshop/Widgets/cart_icon.dart';
 import 'package:easyshop/Widgets/unit_conversion.dart';
@@ -153,24 +154,35 @@ class ItemDetailsScreen extends StatelessWidget{
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Container(
-                        width: 130,
-                        height: 50,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(20),
+                      GestureDetector(
+                        onTap: () {
+                          cartProvider.addCart(grocery);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CartScreen(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 130,
+                          height: 50,
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(20),
+                            ),
+                            color: AppColors.primaryColor,
                           ),
-                          color: AppColors.primaryColor
+                          child: const Text(
+                            "Buy",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
                         ),
-                      child: Text(
-                        "Buy",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ), 
                       ),
                       Container(
                         width: 180,
