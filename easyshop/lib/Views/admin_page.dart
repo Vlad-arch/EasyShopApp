@@ -26,26 +26,47 @@ class _AdminPageState extends State<AdminPage> {
   ];
 
   final List<Map<String, dynamic>> products = [
-    {"name": "Apple", "price": 1.20, "image": "apple.jpeg", "category": "Fruits", "description": "Fresh red delicious apple, perfect for a healthy snack."},
-    {"name": "Strawberry", "price": 3.50, "image": "strawberry.jpeg", "category": "Fruits", "description": "Sweet and juicy local strawberries."},
-    {"name": "Orange Juice", "price": 2.50, "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&q=80", "category": "Beverages", "description": "100% pure squeezed orange juice."},
-    {"name": "Chicken", "price": 5.99, "image": "chicken.jpeg", "category": "Meat", "description": "Organic chicken breast, high in protein and lean."},
-    {"name": "Pork", "price": 4.50, "image": "pork.jpeg", "category": "Meat", "description": "Tender pork chops, great for grilling or pan-searing."},
-    {"name": "Spinach", "price": 1.50, "image": "spinach.jpeg", "category": "Vegetables", "description": "Fresh green spinach leaves, washed and ready to cook."},
-    {"name": "Potato", "price": 0.80, "image": "potato.jpeg", "category": "Vegetables", "description": "Versatile golden potatoes, ideal for roasting or mashing."},
-    {"name": "Milk", "price": 1.10, "image": "milk.jpeg", "category": "Dairy", "description": "Fresh whole milk from local dairy farms."},
-    {"name": "Eggs", "price": 2.50, "image": "eggs.jpeg", "category": "Dairy", "description": "One dozen farm-fresh large eggs."},
-    {"name": "Pasta", "price": 0.99, "image": "pasta.jpeg", "category": "Grains", "description": "Traditional Italian durum wheat pasta."},
-    {"name": "Rice", "price": 1.50, "image": "riso.jpeg", "category": "Grains", "description": "Premium long-grain white rice for any side dish."},
-    {"name": "Chocolate", "price": 2.20, "image": "chocolate.jpeg", "category": "Sweets", "description": "Rich dark chocolate bar with 70% cocoa."},
-    {"name": "Tuna", "price": 3.40, "image": "tuna.jpeg", "category": "Fish", "description": "Premium canned tuna in olive oil."},
-    {"name": "Salmon", "price": 12.99, "image": "salmon.jpeg", "category": "Fish", "description": "Fresh Atlantic salmon fillet, rich in Omega-3."},
-    {"name": "Whole Wheat Bread", "price": 1.80, "image": "bread.jpeg", "category": "Bakery", "description": "Healthy whole wheat bread, baked daily."},
-    {"name": "Chocolate Cake", "price": 15.00, "image": "cake.jpeg", "category": "Bakery", "description": "Decadent chocolate cake for special occasions."},
-    {"name": "Croissant", "price": 1.50, "image": "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=500&q=80", "category": "Bakery", "description": "Buttery and flaky French croissant."},
-    {"name": "Margherita Pizza", "price": 6.50, "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&q=80", "category": "Frozen Foods", "description": "Classic frozen Margherita pizza with real mozzarella."},
-    {"name": "Vanilla Ice Cream", "price": 4.80, "image": "icecream.jpeg", "category": "Frozen Foods", "description": "Smooth and creamy vanilla bean ice cream."},
+    {"name": "Apple", "price": 1.20, "image": "apple.jpeg", "category": "Fruits", "description": "Fresh red delicious apple.", "shop": "SuperShop Milano"},
+    {"name": "Strawberry", "price": 3.50, "image": "strawberry.jpeg", "category": "Fruits", "description": "Sweet local strawberries.", "shop": "SuperShop Milano"},
+    {"name": "Chicken breast", "price": 8.90, "image": "chicken.jpeg", "category": "Meat", "description": "Organic chicken breast from Roma.", "shop": "Meat Experts Roma"},
+    {"name": "Beef Steak", "price": 15.50, "image": "https://images.unsplash.com/photo-1546248133-12832329b390?w=500&q=80", "category": "Meat", "description": "Premium Italian beef steak.", "shop": "Meat Experts Roma"},
+    {"name": "Spinach", "price": 1.50, "image": "spinach.jpeg", "category": "Vegetables", "description": "Fresh green spinach.", "shop": "SuperShop Milano"},
+    {"name": "Fresh Milk", "price": 1.80, "image": "https://images.unsplash.com/photo-1563636619-e910ef2a844b?w=500&q=80", "category": "Dairy", "description": "Fresh milk from Roman hills.", "shop": "Meat Experts Roma"},
+    {"name": "Margherita Pizza", "price": 6.50, "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&q=80", "category": "Frozen Foods", "description": "Classic frozen pizza.", "shop": "Meat Experts Roma"},
+    {"name": "Baguette", "price": 1.20, "image": "https://images.unsplash.com/photo-1597079910443-60c43fc4f729?w=500&q=80", "category": "Bakery", "description": "Crispy French-style baguette.", "shop": "Meat Experts Roma"},
   ];
+
+  final List<Map<String, dynamic>> stores = [
+    {
+      "name": "SuperShop Milano", 
+      "position": "Via Roma 1, Milano, Italia",
+      "lat": 45.4642,
+      "lng": 9.1900
+    },
+    {
+      "name": "Meat Experts Roma", 
+      "position": "Via del Corso 1, Roma, Italia",
+      "lat": 41.9028,
+      "lng": 12.4964
+    },
+  ];
+
+  Future<void> seedShops() async {
+    setState(() => isSeeding = true);
+    try {
+      final batch = FirebaseFirestore.instance.batch();
+      for (var shop in stores) {
+        final docRef = FirebaseFirestore.instance.collection("shops").doc(shop['name']);
+        batch.set(docRef, shop);
+      }
+      await batch.commit();
+      _showSuccess("Shops seeded successfully!");
+    } catch (e) {
+      _showError("Error seeding shops: $e");
+    } finally {
+      if (mounted) setState(() => isSeeding = false);
+    }
+  }
 
   Future<void> seedCategories() async {
     setState(() => isSeeding = true);
@@ -237,6 +258,13 @@ class _AdminPageState extends State<AdminPage> {
                 if (isSeeding)
                   const CircularProgressIndicator()
                 else ...[
+                  _buildButton(
+                    onPressed: seedShops,
+                    icon: Icons.store,
+                    label: "Seed Shops",
+                    color: Colors.purple,
+                  ),
+                  const SizedBox(height: 20),
                   _buildButton(
                     onPressed: seedCategories,
                     icon: Icons.category,

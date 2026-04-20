@@ -9,6 +9,8 @@ import 'package:easyshop/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:easyshop/utils/github_helper.dart';
 import 'package:easyshop/auth.dart';
+import 'package:easyshop/utils/location_service.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomePage extends StatefulWidget{
   const HomePage({super.key});
@@ -17,45 +19,152 @@ class HomePage extends StatefulWidget{
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   String category = '';
   List<Map<String,dynamic>> groceryItems = [];
   List<Map<String,dynamic>> groceryCategory = [];
   List<Map<String,dynamic>> filteredItems = [];
   List<Map<String,dynamic>> allProducts = [];
+  Map<String, Position> shopCoordinates = {};
+  Position? userPosition;
   
   bool isLoading = true;
   @override
   void initState(){
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     fetchData();
   }
 
-  Future<void> fetchData() async {
-    await fetchCategory();
-    await fetchAllProducts(); // Carica tutti i prodotti per i suggerimenti
-    if (groceryCategory.isNotEmpty) {
-      category = groceryCategory[0]["name"]; 
-      await filterProductByCategory(category);
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Refresh location and products when app is reopened
+      fetchData();
     }
-    setState(() {
-      isLoading = false;
-    });
+  }
+
+  Future<void> fetchData() async {
+    setState(() => isLoading = true);
+    try {
+      // 1. Concurrent fetching to save time
+      await Future.wait([
+        fetchUserPosition(),
+        fetchShopsAndGeocode(),
+        fetchCategory(),
+      ]);
+      
+      // 2. Fetch products (filtering happens inside based on available data)
+      await fetchAllProducts();
+      
+      if (groceryCategory.isNotEmpty) {
+        category = groceryCategory[0]["name"]; 
+        await filterProductByCategory(category);
+      }
+    } catch (e) {
+      print("Error in fetchData: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> fetchUserPosition() async {
+    try {
+      userPosition = await LocationService().getUserPosition();
+      print("User position: $userPosition");
+    } catch (e) {
+      print("Could not fetch user position: $e");
+      userPosition = null; // Ensure it's null for fallback logic
+    }
+  }
+
+  Future<void> fetchShopsAndGeocode() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection("shops").get();
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        
+        // Priority: Use hardcoded coordinates from Firestore to bypass local geocoding failures
+        if (data['lat'] != null && data['lng'] != null) {
+          shopCoordinates[doc.id] = Position(
+            latitude: (data['lat'] as num).toDouble(),
+            longitude: (data['lng'] as num).toDouble(),
+            timestamp: DateTime.now(),
+            accuracy: 0, altitude: 0, heading: 0, speed: 0, 
+            speedAccuracy: 0, altitudeAccuracy: 0, headingAccuracy: 0,
+          );
+          continue; // Skip geocoding if we have coords
+        }
+
+        final address = data['position'];
+        if (address != null) {
+          final loc = await LocationService().getCoordinatesFromAddress(address);
+          if (loc != null) {
+            shopCoordinates[doc.id] = Position(
+              latitude: loc.latitude,
+              longitude: loc.longitude,
+              timestamp: DateTime.now(),
+              accuracy: 0, altitude: 0, heading: 0, speed: 0,
+              speedAccuracy: 0, altitudeAccuracy: 0, headingAccuracy: 0,
+            );
+          }
+        }
+      }
+    } catch (e) {
+      print("Error fetching shops or geocoding: $e");
+    }
   }
 
   Future<void> fetchAllProducts() async {
     try {
       QuerySnapshot<Map<String, dynamic>> snapshot = 
         await FirebaseFirestore.instance.collection("product").get();
+      
+      List<Map<String, dynamic>> products = [];
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        
+        // Proximity Filter
+        if (userPosition != null && data['shop'] != null) {
+          final shopPos = shopCoordinates[data['shop']];
+          if (shopPos != null) {
+            double distance = Geolocator.distanceBetween(
+              userPosition!.latitude, 
+              userPosition!.longitude, 
+              shopPos.latitude, 
+              shopPos.longitude
+            );
+            if (distance > 150000) {
+              continue; // Skip if > 150km
+            }
+          } else {
+            // No coordinates for shop? Treat as far/missing
+            continue;
+          }
+        } else {
+          // No user position or no shop assigned? Skip to trigger "No products in area"
+          continue;
+        }
+        
+        products.add(data);
+      }
+
       setState(() {
-        allProducts = snapshot.docs.map((doc) {
-          final data = doc.data();
-          data['id'] = doc.id;
-          return data;
-        }).toList();
+        allProducts = products;
       });
     } catch (e) {
-      print(e.toString());
+      print("Error fetching products: $e");
     }
   }
 
@@ -78,25 +187,12 @@ class _HomePageState extends State<HomePage> {
   Future<void> filterProductByCategory(String selectedCategory) async {
     setState(() {
       isLoading = true;
+      category = selectedCategory;
+      // Filter from the already proximity-filtered allProducts list
+      groceryItems = allProducts.where((item) => item['category'] == selectedCategory).toList();
+      filteredItems = groceryItems;
+      isLoading = false;
     });
-    try {
-      QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.
-      instance
-      .collection("product")
-      .where('category',isEqualTo:selectedCategory)
-      .get();
-    setState(() {
-        category = selectedCategory;
-        groceryItems = snapshot.docs.map((doc) {
-          final data = doc.data();
-          data['id'] = doc.id;
-          return data;
-        }).toList();
-        filteredItems = groceryItems;
-      });
-    } catch (e) {
-      print(e.toString());
-    }
   }
 
   void searchProducts(String query) {
@@ -340,15 +436,30 @@ class _HomePageState extends State<HomePage> {
                   ) 
               ],
             ),
-            filteredItems.isEmpty 
+            allProducts.isEmpty && !isLoading
               ? Center(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 30),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
                     child: Text(
-                      "No products found", 
+                      "We're sorry, but there are no products available in your area",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 18,
+                        color: Colors.red.shade700,
                         fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                )
+              : filteredItems.isEmpty && !isLoading
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 30),
+                      child: Text(
+                        "No products found in this category", 
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
