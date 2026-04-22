@@ -71,7 +71,7 @@ class CartItems extends StatelessWidget{
                               ),
                             ),
                             Text(
-                              cart.grocery['price']?.toString() ?? "0.00",
+                              "€ ${cart.grocery['price']?.toString() ?? "0.00"}",
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,

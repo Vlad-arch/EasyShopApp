@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:easyshop/utils/location_service.dart';
+import 'package:geocoding/geocoding.dart';
 
 class Auth {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -35,6 +37,55 @@ class Auth {
     }
   }
 
+  Future<void> createShopWithEmailAndPassword({
+    required String email,
+    required String password,
+    required String name,
+    required String address,
+  }) async {
+    UserCredential credential = await _firebaseAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    if (credential.user != null) {
+      final String uid = credential.user!.uid;
+
+      // Geocode the address
+      double? lat;
+      double? lng;
+      try {
+        Location? location = await LocationService().getCoordinatesFromAddress(address);
+        if (location != null) {
+          lat = location.latitude;
+          lng = location.longitude;
+        }
+      } catch (e) {
+        print("Geocoding failed during shop registration: $e");
+      }
+
+      // Create Firestore document with user data
+      await _firestore.collection('users').doc(uid).set({
+        'uid': uid,
+        'email': email,
+        'name': name,
+        'isShop': true,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // Create shop document
+      await _firestore.collection('shops').doc(uid).set({
+        'id': uid,
+        'name': name,
+        'position': address,
+        'email': email,
+        'lat': lat,
+        'lng': lng,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
   Future<void> signInWithGoogle() async {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
     if (googleUser == null) {
@@ -61,4 +112,4 @@ class Auth {
   Future<void> signOut() async{
     await _firebaseAuth.signOut();
   }
-}
+}

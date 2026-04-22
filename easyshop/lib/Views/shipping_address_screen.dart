@@ -108,10 +108,10 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
     
     return Scaffold(
-      backgroundColor: AppColors.secondaryColor,
+      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text("Spedisci a questo indirizzo"),
-        backgroundColor: Colors.transparent,
+        title: const Text("Gestisci Indirizzi"),
+        backgroundColor: AppColors.backgroundColor,
         elevation: 0,
         centerTitle: true,
       ),

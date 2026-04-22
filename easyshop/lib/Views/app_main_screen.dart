@@ -26,10 +26,66 @@ class _AppMainScreenState extends State<AppMainScreen> {
     const CartScreen(),
     const ProfileScreen(),
   ];
+
+  String _getPageTitle(int index) {
+    switch (index) {
+      case 1:
+        return "Favorite";
+      case 2:
+        return "Cart";
+      case 3:
+        return "Profile";
+      default:
+        return "";
+    }
+  }
+
+  Widget _getPageIcon(int index) {
+    switch (index) {
+      case 1:
+        return const Icon(Icons.favorite, color: Colors.red, size: 28);
+      case 2:
+        return const Icon(Icons.shopping_cart, color: AppColors.primaryColor, size: 28);
+      case 3:
+        return const Icon(Icons.person, color: Colors.grey, size: 28);
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.secondaryColor,
+      backgroundColor: AppColors.backgroundColor,
+      appBar: AppBar(
+        toolbarHeight: 140,
+        backgroundColor: AppColors.backgroundColor,
+        elevation: 0,
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/icons/logo_app.png',
+              height: 120,
+            ),
+            if (selectedIndex != 0) ...[
+              const Spacer(),
+              Text(
+                _getPageTitle(selectedIndex),
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 8),
+              _getPageIcon(selectedIndex),
+              const SizedBox(width: 15),
+            ],
+          ],
+        ),
+        centerTitle: false,
+      ),
       bottomNavigationBar:BottomNavigationBar(
         currentIndex: selectedIndex,
         selectedItemColor: AppColors.primaryColor,
@@ -165,12 +221,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.secondaryColor,
-      appBar: AppBar(
-        title: const Text("Profilo"),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      backgroundColor: AppColors.backgroundColor,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),

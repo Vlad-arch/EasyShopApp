@@ -1,8 +1,11 @@
 import 'package:easyshop/Views/admin_page.dart';
 import 'package:easyshop/auth.dart';
+import 'package:easyshop/screens/AboutUsPage.dart';
+import 'package:easyshop/screens/ShopRegistrationPage.dart';
 import 'package:easyshop/utils/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({Key? key}) : super(key: key);
@@ -24,6 +27,22 @@ class _AuthPageState extends State<AuthPage> {
       isLoading = true;
       errorMessage = '';
     });
+
+    if (_email.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your email address."), backgroundColor: Colors.orange),
+      );
+      setState(() => isLoading = false);
+      return;
+    }
+    if (_password.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your password."), backgroundColor: Colors.orange),
+      );
+      setState(() => isLoading = false);
+      return;
+    }
+
     try {
       if (isLogin) {
         if (_email.text.trim() == 'admin' && _password.text.trim() == 'admin') {
@@ -39,7 +58,7 @@ class _AuthPageState extends State<AuthPage> {
         );
       } else {
         if (_name.text.trim().isEmpty) {
-          throw FirebaseAuthException(code: "missing-name", message: "Inserisci il tuo nome completo.");
+          throw FirebaseAuthException(code: "missing-name", message: "Please enter your full name.");
         }
         await Auth().createUserWithEmailAndPassword(
           email: _email.text.trim(),
@@ -49,7 +68,7 @@ class _AuthPageState extends State<AuthPage> {
       }
     } on FirebaseAuthException catch (e) {
       setState(() {
-        errorMessage = e.message ?? "Errore di autenticazione";
+        errorMessage = e.message ?? "Authentication error";
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
@@ -63,14 +82,48 @@ class _AuthPageState extends State<AuthPage> {
     }
   }
 
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text('EasyShop'),
-        backgroundColor: Colors.white,
+        toolbarHeight: 140,
+        title: Image.asset(
+          'assets/icons/logo_app.png',
+          height: 120,
+        ),
+        backgroundColor: AppColors.backgroundColor,
         elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () => _launchURL('https://www.facebook.com'),
+            icon: const Icon(Icons.facebook, color: Color(0xFF1877F2)),
+          ),
+          IconButton(
+            onPressed: () => _launchURL('https://www.instagram.com'),
+            icon: const Icon(Icons.camera_alt_outlined, color: Color(0xFFE4405F)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AboutUsPage()),
+              );
+            },
+            child: const Text(
+              'About Us',
+              style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(width: 10),
+        ],
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -79,7 +132,7 @@ class _AuthPageState extends State<AuthPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                isLogin ? 'Bentornato' : 'Crea un Account',
+                isLogin ? 'Welcome Back' : 'Create an Account',
                 style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 40),
@@ -88,7 +141,7 @@ class _AuthPageState extends State<AuthPage> {
                   controller: _name,
                   keyboardType: TextInputType.name,
                   decoration: InputDecoration(
-                    labelText: 'Nome Completo',
+                    labelText: 'Full Name',
                     prefixIcon: const Icon(Icons.person_outline),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -131,7 +184,7 @@ class _AuthPageState extends State<AuthPage> {
                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                         )
                       : Text(
-                          isLogin ? 'Accedi' : 'Registrati',
+                          isLogin ? 'Sign In' : 'Sign Up',
                           style: const TextStyle(fontSize: 16, color: Colors.white),
                         ),
                 ),
@@ -145,8 +198,8 @@ class _AuthPageState extends State<AuthPage> {
                 },
                 child: Text(
                   isLogin
-                      ? "Non hai un account? Registrati"
-                      : "Hai già un account? Accedi",
+                      ? "Don't have an account? Sign Up"
+                      : "Already have an account? Sign In",
                 ),
               ),
               const SizedBox(height: 20),
@@ -155,7 +208,7 @@ class _AuthPageState extends State<AuthPage> {
                   Expanded(child: Divider()),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text("OPPURE", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                    child: Text("OR", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
                   ),
                   Expanded(child: Divider()),
                 ],
@@ -180,7 +233,7 @@ class _AuthPageState extends State<AuthPage> {
                             } else {
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text("Errore Google Login: ${e.toString()}"), backgroundColor: Colors.red),
+                                  SnackBar(content: Text("Google Login Error: ${e.toString()}"), backgroundColor: Colors.red),
                                 );
                               }
                             }
@@ -210,11 +263,40 @@ class _AuthPageState extends State<AuthPage> {
                               style: TextStyle(color: Colors.red[600], fontSize: 24, fontWeight: FontWeight.bold),
                             ),
                             const Text(
-                              'Accedi con Google',
+                              'Sign in with Google',
                               style: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
+                ),
+              ),
+              const SizedBox(height: 30),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    const Text(
+                      "You are a shop and you want to become our partner?",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ShopRegistrationPage()),
+                        );
+                      },
+                      child: const Text(
+                        "join us",
+                        style: TextStyle(
+                          color: AppColors.primaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

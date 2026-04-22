@@ -16,7 +16,7 @@ class ItemDetailsScreen extends StatelessWidget{
   Widget build(BuildContext context) {
     CartProvider cartProvider = Provider.of<CartProvider>(context);
     return Scaffold(
-      backgroundColor: AppColors.secondaryColor,
+      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
         backgroundColor: AppColors.secondaryColor,
         elevation: 0,
@@ -91,7 +91,7 @@ class ItemDetailsScreen extends StatelessWidget{
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  "${grocery['price'] ?? '0.00'} /${getUnit(grocery['category'])}",
+                  "€${grocery['price'] ?? '0.00'} /${getUnit(grocery['category'])}",
                   style: const TextStyle(
                     fontSize: 22,
                     color: Colors.red,

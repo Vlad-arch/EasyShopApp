@@ -20,17 +20,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
       final provider = Provider.of<FavoriteProvider>(context);
       final favoriteItems = provider.favorites;
     return Scaffold(
-      backgroundColor: AppColors.secondaryColor,
-      appBar: AppBar(
-        backgroundColor: AppColors.secondaryColor,
-        centerTitle: true,
-        title: const Text(
-          "Favorite",
-          style: TextStyle(
-            fontWeight: FontWeight.bold
-          ),
-        ),
-      ),
+      backgroundColor: AppColors.backgroundColor,
       body: favoriteItems.isEmpty 
       ? const Center(
         child: Text(
@@ -134,7 +124,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                             ),
                             const SizedBox(height: 5),
                             Text(
-                              "\$${productData['price'] ?? '0.00'}/${getUnit(productData['category'])}",
+                              "€${productData['price'] ?? '0.00'}/${getUnit(productData['category'])}",
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,

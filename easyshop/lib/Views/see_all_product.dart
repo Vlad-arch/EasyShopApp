@@ -142,9 +142,9 @@ class _SeeAllProductState extends State<SeeAllProduct> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.secondaryColor,
+      backgroundColor: AppColors.backgroundColor,
         appBar: AppBar(
-          backgroundColor: AppColors.secondaryColor,
+          backgroundColor: AppColors.backgroundColor,
           elevation: 0,
           centerTitle: true,
           title: Text(

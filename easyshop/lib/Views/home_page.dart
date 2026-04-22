@@ -214,7 +214,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.secondaryColor,
+      backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -344,6 +344,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                               padding: 
                                 const EdgeInsets.symmetric(horizontal: 5),
                           decoration: BoxDecoration(
+                            color: AppColors.secondaryColor.withOpacity(0.3),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
                               width:

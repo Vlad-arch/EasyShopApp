@@ -20,7 +20,7 @@ class GroceryItems extends StatelessWidget {
         gradient: const LinearGradient(
           colors: [
             Colors.white,
-            Color(0xffF7FFF7),
+            AppColors.backgroundColor,
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -67,7 +67,7 @@ class GroceryItems extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               const Text(
-                "\$",
+                '€',
                 style: TextStyle(
                   fontSize: 22, 
                   color: Colors.black,

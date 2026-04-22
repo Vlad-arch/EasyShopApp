@@ -22,20 +22,7 @@ class _CartScreenState extends State<CartScreen> {
     List<CartModel> carts = cartProvider.carts.reversed.toList();
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: AppColors.secondaryColor,
-      appBar: AppBar(
-        forceMaterialTransparency: true,
-        backgroundColor: AppColors.secondaryColor,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          "My Cart",
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+      backgroundColor: AppColors.backgroundColor,
       body: SafeArea(child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -53,13 +40,13 @@ class _CartScreenState extends State<CartScreen> {
       ),
       bottomSheet: carts.isEmpty 
         ? Container(
-          color: AppColors.secondaryColor,
+          color: AppColors.backgroundColor,
           child: Center(
             child: Text("Cart empty"),
           ),
         )
       : Container(
-          color: AppColors.secondaryColor,
+          color: AppColors.backgroundColor,
           height: size.height * 0.345,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -78,7 +65,7 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                     ),
                     Text(
-                      "\$${cartProvider.totalCart().toStringAsFixed(2)}",
+                      "€${cartProvider.totalCart().toStringAsFixed(2)}",
                       style: const TextStyle(
                         fontSize: 20,
                        fontWeight: FontWeight.bold,
@@ -105,7 +92,7 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                     const Spacer(),
                     const Text(
-                      "\$4.99", 
+                      "€4.99", 
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -136,7 +123,7 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                     const Spacer(),
                     Text(
-                      "\$${(carts.length*0.1).toStringAsFixed(2)}", 
+                      "€${(carts.length*0.1).toStringAsFixed(2)}", 
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -167,7 +154,7 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                     ),
                     Text(
-                      "\$${(cartProvider.totalCart() + 4.99 + (isEcoFriendly ? (0.1 * carts.length) : 0.0)).toStringAsFixed(2)}",
+                      "€${(cartProvider.totalCart() + 4.99 + (isEcoFriendly ? (0.1 * carts.length) : 0.0)).toStringAsFixed(2)}",
                       style: const TextStyle(
                         fontSize: 20,
                        fontWeight: FontWeight.bold,

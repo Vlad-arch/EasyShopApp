@@ -1,4 +1,5 @@
 import 'package:easyshop/auth.dart';
+import 'package:easyshop/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget{
@@ -17,8 +18,13 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text('EasyShop'),
+        toolbarHeight: 140,
+        title: Image.asset(
+          'assets/icons/logo_app.png',
+          height: 120,
+        ),
         actions: [
           IconButton(onPressed: (){
             signOut();
