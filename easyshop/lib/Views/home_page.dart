@@ -156,6 +156,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           // No user position or no shop assigned? Skip to trigger "No products in area"
           continue;
         }
+        // 3. Stock Filter
+        final int stock = (data['stock'] as num?)?.toInt() ?? 0;
+        if (stock <= 0) {
+          continue; // Skip sold-out products for consumers
+        }
         
         products.add(data);
       }

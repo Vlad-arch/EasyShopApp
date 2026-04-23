@@ -112,4 +112,52 @@ class Auth {
   Future<void> signOut() async{
     await _firebaseAuth.signOut();
   }
+
+  Future<void> updateShopProfile({
+    required String name,
+    required String email,
+    String? password,
+    String? address,
+  }) async {
+    User? user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception("User not logged in");
+
+    // 1. Update Auth Email
+    if (email != user.email) {
+      await user.updateEmail(email);
+    }
+
+    // 2. Update Auth Password
+    if (password != null && password.isNotEmpty) {
+      await user.updatePassword(password);
+    }
+
+    // 3. Update Firestore 'users'
+    await _firestore.collection('users').doc(user.uid).update({
+      'name': name,
+      'email': email,
+    });
+
+    // 4. Update Firestore 'shops'
+    Map<String, dynamic> shopUpdate = {
+      'name': name,
+      'email': email,
+    };
+
+    if (address != null && address.isNotEmpty) {
+      shopUpdate['position'] = address;
+      // Geocode
+      try {
+        Location? location = await LocationService().getCoordinatesFromAddress(address);
+        if (location != null) {
+          shopUpdate['lat'] = location.latitude;
+          shopUpdate['lng'] = location.longitude;
+        }
+      } catch (e) {
+        print("Geocoding failed during profile update: $e");
+      }
+    }
+
+    await _firestore.collection('shops').doc(user.uid).update(shopUpdate);
+  }
 }

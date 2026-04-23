@@ -18,6 +18,7 @@ class _ShopAddProductPageState extends State<ShopAddProductPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _stockController = TextEditingController();
   
   String? selectedCategory;
   List<String> categories = [];
@@ -76,6 +77,7 @@ class _ShopAddProductPageState extends State<ShopAddProductPage> {
           'name': _nameController.text.trim(),
           'description': _descriptionController.text.trim(),
           'price': double.parse(_priceController.text.trim()),
+          'stock': int.parse(_stockController.text.trim()),
           'image': fileName, // Salviamo solo il nome del file, GithubHelper farà il resto
           'category': selectedCategory,
           'shop': shopId,
@@ -179,6 +181,17 @@ class _ShopAddProductPageState extends State<ShopAddProductPage> {
               validator: (val) => val == null || val.isEmpty ? "Required" : null,
             ),
             const SizedBox(height: 15),
+            TextFormField(
+              controller: _stockController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: "Stock Quantity",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                prefixIcon: const Icon(Icons.inventory_2_outlined),
+              ),
+              validator: (val) => val == null || val.isEmpty ? "Required" : null,
+            ),
+            const SizedBox(height: 15),
             DropdownButtonFormField<String>(
               value: selectedCategory,
               decoration: InputDecoration(
@@ -228,6 +241,7 @@ class _ShopAddProductPageState extends State<ShopAddProductPage> {
     _nameController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();
+    _stockController.dispose();
     super.dispose();
   }
 }

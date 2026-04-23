@@ -1,7 +1,7 @@
 import 'package:easyshop/Views/shop_add_product_page.dart';
 import 'package:easyshop/Views/shop_home_page.dart';
+import 'package:easyshop/Views/shop_profile_page.dart';
 import 'package:easyshop/utils/colors.dart';
-import 'package:easyshop/auth.dart';
 import 'package:flutter/material.dart';
 
 class ShopMainScreen extends StatefulWidget {
@@ -16,7 +16,7 @@ class _ShopMainScreenState extends State<ShopMainScreen> {
   final List pages = [
     const ShopHomePage(),
     const ShopAddProductPage(),
-    const ShopProfileScreen(),
+    const ShopProfilePage(),
   ];
 
   @override
@@ -80,26 +80,6 @@ class _ShopMainScreenState extends State<ShopMainScreen> {
         ],
       ),
       body: pages[selectedIndex],
-    );
-  }
-}
-
-class ShopProfileScreen extends StatelessWidget {
-  const ShopProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ElevatedButton.icon(
-        onPressed: () => Auth().signOut(),
-        icon: const Icon(Icons.logout),
-        label: const Text("Logout"),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.redAccent,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-        ),
-      ),
     );
   }
 }

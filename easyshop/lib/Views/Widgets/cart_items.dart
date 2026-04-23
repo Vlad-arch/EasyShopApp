@@ -121,11 +121,23 @@ class CartItems extends StatelessWidget{
                                 ),
                                 GestureDetector(
                                   onTap: () {                                   
-                                      cartProvider.addCart(cart.grocery);                                   
+                                      final int stock = (cart.grocery['stock'] as num?)?.toInt() ?? 0;
+                                      if (cart.quantity < stock) {
+                                        cartProvider.addCart(cart.grocery);
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text("Max stock reached!"),
+                                            duration: Duration(milliseconds: 500),
+                                          ),
+                                        );
+                                      }
                                   },
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.add_circle,
-                                    color: AppColors.primaryColor,
+                                    color: cart.quantity >= ((cart.grocery['stock'] as num?)?.toInt() ?? 0) 
+                                      ? Colors.grey 
+                                      : AppColors.primaryColor,
                                   ),
                                 ),
                               ],

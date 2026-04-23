@@ -11,22 +11,33 @@ class CartProvider with ChangeNotifier {
 
 //add product to the cart
   void addCart(Map<String, dynamic> grocery) { 
+    final int stock = (grocery['stock'] as num?)?.toInt() ?? 0;
+    
     if (productExist(grocery)) {
       int index = _carts
         .indexWhere((element) => element.grocery['id'] == grocery['id']);
-      _carts[index].quantity = _carts[index].quantity + 1;  
+      
+      if (_carts[index].quantity < stock) {
+        _carts[index].quantity = _carts[index].quantity + 1;  
+        notifyListeners();
+      }
     }else{
-      _carts.add(CartModel(grocery: grocery, quantity: 1));
+      if (stock > 0) {
+        _carts.add(CartModel(grocery: grocery, quantity: 1));
+        notifyListeners();
+      }
     }
-    notifyListeners();
   } 
   //increase the quantity of product in the cart
   void addQuantity(Map<String, dynamic> grocery){
     int index = _carts
         .indexWhere((element) => element.grocery['id'] == grocery['id']);
     if(index != -1){
-      //ensure the product exists
-      _carts[index].quantity = _carts[index].quantity + 1;
+      final int stock = (grocery['stock'] as num?)?.toInt() ?? 0;
+      if (_carts[index].quantity < stock) {
+        _carts[index].quantity = _carts[index].quantity + 1;
+        notifyListeners();
+      }
     }
   }
   //decrease the quantity of product in the cart
