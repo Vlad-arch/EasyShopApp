@@ -7,6 +7,9 @@ import 'package:easyshop/utils/colors.dart';
 import 'package:easyshop/utils/github_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easyshop/api/review_service.dart';
+import 'package:easyshop/auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ItemDetailsScreen extends StatelessWidget{
   final Map<String, dynamic> grocery;
@@ -213,14 +216,129 @@ class ItemDetailsScreen extends StatelessWidget{
                             fontSize: 18,
                           ),
                         ),
-                      ), 
-                      )                    
+                      ),
+                      )
                     ],
-                  )   
+                  )
                 ],
               ),
+              const Divider(height: 40, thickness: 1),
+              ReviewsWidget(productId: grocery['id'] ?? "unknown"),
+              const SizedBox(height: 50),
           ],
-        ),      
+        ),
+      ),
+    );
+  }
+}
+
+class ReviewsWidget extends StatefulWidget {
+  final String productId;
+  const ReviewsWidget({super.key, required this.productId});
+
+  @override
+  State<ReviewsWidget> createState() => _ReviewsWidgetState();
+}
+
+class _ReviewsWidgetState extends State<ReviewsWidget> {
+  final _commentController = TextEditingController();
+  List<Map<String, dynamic>> reviews = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReviews();
+  }
+
+  Future<void> _loadReviews() async {
+    final data = await ReviewService().getReviews(widget.productId);
+    if (mounted) {
+      setState(() {
+        reviews = data;
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _postReview() async {
+    if (_commentController.text.trim().isEmpty) return;
+
+    final user = Auth().currentUser;
+    final userName = user?.displayName ?? user?.email?.split('@')[0] ?? "Anonymous";
+
+    final success = await ReviewService().addReview(
+      productId: widget.productId,
+      userName: userName,
+      comment: _commentController.text.trim(),
+      rating: 5, // Default rating for simplicity
+    );
+
+    if (success) {
+      _commentController.clear();
+      _loadReviews();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Review added!")),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Customer Reviews",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          if (isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (reviews.isEmpty)
+            const Text("No reviews yet. Be the first to review!")
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: reviews.length,
+              itemBuilder: (context, index) {
+                final review = reviews[index];
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(review['user_name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(review['comment']),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.star, color: Colors.amber, size: 18),
+                      Text(review['rating'].toString()),
+                    ],
+                  ),
+                );
+              },
+            ),
+          const SizedBox(height: 20),
+          const Text("Add a review", style: TextStyle(fontWeight: FontWeight.bold)),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _commentController,
+                  decoration: const InputDecoration(hintText: "Write your comment..."),
+                ),
+              ),
+              IconButton(
+                onPressed: _postReview,
+                icon: const Icon(Icons.send, color: AppColors.primaryColor),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
