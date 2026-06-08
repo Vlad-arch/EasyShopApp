@@ -4,6 +4,7 @@ import 'package:easyshop/utils/colors.dart';
 import 'package:easyshop/utils/github_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easyshop/Views/item_details_screen.dart';
 
 class CartItems extends StatelessWidget{
   final CartModel cart;
@@ -20,21 +21,31 @@ class CartItems extends StatelessWidget{
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Container(
-                width: 85,
-                height: 85,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(15),
-                  ),                   
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image: NetworkImage(
-                    GithubHelper.convertUrl(cart.grocery['image']),
-                  ), 
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ItemDetailsScreen(grocery: cart.grocery),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 85,
+                  height: 85,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(15),
+                    ),                   
+                  image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: NetworkImage(
+                      GithubHelper.convertUrl(cart.grocery['image']),
+                    ), 
+                  ),
                 ),
-              ),
+                ),
               ),
               
               Column(

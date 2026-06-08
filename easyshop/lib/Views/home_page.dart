@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         await filterProductByCategory(category);
       }
     } catch (e) {
-      print("Error in fetchData: $e");
+      debugPrint("Error in fetchData: $e");
     } finally {
       if (mounted) {
         setState(() {
@@ -81,9 +81,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   Future<void> fetchUserPosition() async {
     try {
       userPosition = await LocationService().getUserPosition();
-      print("User position: $userPosition");
+      debugPrint("User position: $userPosition");
     } catch (e) {
-      print("Could not fetch user position: $e");
+      debugPrint("Could not fetch user position: $e");
       userPosition = null; // Ensure it's null for fallback logic
     }
   }
@@ -121,7 +121,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         }
       }
     } catch (e) {
-      print("Error fetching shops or geocoding: $e");
+      debugPrint("Error fetching shops or geocoding: $e");
     }
   }
 
@@ -165,11 +165,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         products.add(data);
       }
 
-      setState(() {
-        allProducts = products;
-      });
+      if (mounted) {
+        setState(() {
+          allProducts = products;
+        });
+      }
     } catch (e) {
-      print("Error fetching products: $e");
+      debugPrint("Error fetching products: $e");
     }
   }
 
@@ -177,43 +179,51 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     try {
       QuerySnapshot<Map<String, dynamic>> snapshot = 
         await FirebaseFirestore.instance.collection("Category").get();
-      setState(() {
-        groceryCategory = snapshot.docs.map((doc) {
-          final data = doc.data();
-          data['id'] = doc.id;
-          return data;
-        }).toList();
-      });
+      if (mounted) {
+        setState(() {
+          groceryCategory = snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return data;
+          }).toList();
+        });
+      }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
     }
   }
 
   Future<void> filterProductByCategory(String selectedCategory) async {
-    setState(() {
-      isLoading = true;
-      category = selectedCategory;
-      // Filter from the already proximity-filtered allProducts list
-      groceryItems = allProducts.where((item) => item['category'] == selectedCategory).toList();
-      filteredItems = groceryItems;
-      isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+        category = selectedCategory;
+        // Filter from the already proximity-filtered allProducts list
+        groceryItems = allProducts.where((item) => item['category'] == selectedCategory).toList();
+        filteredItems = groceryItems;
+        isLoading = false;
+      });
+    }
   }
 
   void searchProducts(String query) {
     if (query.isEmpty) {
-      setState(() {
-        filteredItems = groceryItems;
-      });
+      if (mounted) {
+        setState(() {
+          filteredItems = groceryItems;
+        });
+      }
     } else {
-      setState(() {
-        filteredItems = groceryItems
-            .where((item) => item['name']
-                .toString()
-                .toLowerCase()
-                .contains(query.toLowerCase()))
-            .toList();
-      });
+      if (mounted) {
+        setState(() {
+          filteredItems = groceryItems
+              .where((item) => item['name']
+                  .toString()
+                  .toLowerCase()
+                  .contains(query.toLowerCase()))
+              .toList();
+        });
+      }
     }
   }
   @override
@@ -349,7 +359,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                               padding: 
                                 const EdgeInsets.symmetric(horizontal: 5),
                           decoration: BoxDecoration(
-                            color: AppColors.secondaryColor.withOpacity(0.3),
+                            color: AppColors.secondaryColor.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
                               width:
@@ -372,7 +382,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                                   shape: BoxShape.circle, 
                                   color: Colors.white,
                                   border: Border.all(
-                                    color: Colors.grey.withOpacity(0.3),
+                                    color: Colors.grey.withValues(alpha: 0.3),
                                     width: 1,
                                   ),
                                   image: DecorationImage(

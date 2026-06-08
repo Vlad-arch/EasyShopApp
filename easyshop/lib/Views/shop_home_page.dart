@@ -38,7 +38,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
         });
       }
     } catch (e) {
-      print("Error fetching categories: $e");
+      debugPrint("Error fetching categories: $e");
     }
   }
 
@@ -60,7 +60,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
         });
       }
     } catch (e) {
-      print("Error fetching products: $e");
+      debugPrint("Error fetching products: $e");
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
@@ -143,7 +143,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
                     applyFilters();
                   });
                 },
-                selectedColor: AppColors.primaryColor.withOpacity(0.3),
+                selectedColor: AppColors.primaryColor.withValues(alpha: 0.3),
                 checkmarkColor: AppColors.primaryColor,
               ),
             ],
@@ -181,7 +181,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
                           label: Text(categories[index]),
                           selected: isSelected,
                           onSelected: (val) => filterByCategory(categories[index]),
-                          selectedColor: AppColors.primaryColor.withOpacity(0.3),
+                          selectedColor: AppColors.primaryColor.withValues(alpha: 0.3),
                           checkmarkColor: AppColors.primaryColor,
                         ),
                       );

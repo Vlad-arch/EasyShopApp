@@ -41,7 +41,7 @@ class _DashboardPageState extends State<DashboardPage> {
       label: item.label, 
       icon: SvgPicture.asset(
         item.iconPath, 
-        color: iconColor
+        colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
         ),
       );
   }

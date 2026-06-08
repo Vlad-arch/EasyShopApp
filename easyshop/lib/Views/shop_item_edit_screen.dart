@@ -86,9 +86,11 @@ class _ShopItemEditScreenState extends State<ShopItemEditScreen> {
         Navigator.pop(context, true); // Return true to indicate update
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error updating product: $e"), backgroundColor: Colors.red),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error updating product: $e"), backgroundColor: Colors.red),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => isLoading = false);

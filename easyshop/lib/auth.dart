@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -61,7 +62,7 @@ class Auth {
           lng = location.longitude;
         }
       } catch (e) {
-        print("Geocoding failed during shop registration: $e");
+        debugPrint("Geocoding failed during shop registration: $e");
       }
 
       // Create Firestore document with user data
@@ -124,7 +125,7 @@ class Auth {
 
     // 1. Update Auth Email
     if (email != user.email) {
-      await user.updateEmail(email);
+      await user.verifyBeforeUpdateEmail(email);
     }
 
     // 2. Update Auth Password
@@ -154,7 +155,7 @@ class Auth {
           shopUpdate['lng'] = location.longitude;
         }
       } catch (e) {
-        print("Geocoding failed during profile update: $e");
+        debugPrint("Geocoding failed during profile update: $e");
       }
     }
 

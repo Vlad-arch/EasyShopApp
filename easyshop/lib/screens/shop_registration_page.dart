@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ShopRegistrationPage extends StatefulWidget {
-  const ShopRegistrationPage({Key? key}) : super(key: key);
+  const ShopRegistrationPage({super.key});
 
   @override
   State<ShopRegistrationPage> createState() => _ShopRegistrationPageState();

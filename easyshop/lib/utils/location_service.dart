@@ -1,4 +1,5 @@
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter/foundation.dart';
 import 'package:geocoding/geocoding.dart';
 
 class LocationService {
@@ -38,7 +39,7 @@ class LocationService {
         return locations[0];
       }
     } catch (e) {
-      print("Error geocoding address ($address): $e");
+      debugPrint("Error geocoding address ($address): $e");
     }
     return null;
   }

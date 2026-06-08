@@ -1,8 +1,6 @@
 import 'package:easyshop/api/api_service.dart';
 import 'package:easyshop/models/category_model.dart';
 import 'package:easyshop/pages/categories/category_item_card_widget.dart';
-import 'package:easyshop/utils/colors.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:snippet_coder_utils/hex_color.dart';

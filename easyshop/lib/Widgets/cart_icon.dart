@@ -1,6 +1,5 @@
 import 'package:easyshop/Provider/cart_provider.dart';
 import 'package:easyshop/Views/cart_screen.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

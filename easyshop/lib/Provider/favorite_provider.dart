@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -38,7 +37,7 @@ class FavoriteProvider with ChangeNotifier{
         "productId":productId,
         });
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
     }
   }
 
@@ -46,7 +45,7 @@ class FavoriteProvider with ChangeNotifier{
     try {
       await _firestore.collection("productFavorite").doc(productId).delete();
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
     }
   }
   
@@ -58,7 +57,7 @@ class FavoriteProvider with ChangeNotifier{
       _favoriteIds = snapshot.docs.map((doc) => doc.id).toList();
     } catch (e) {
       _favoriteIds = [];
-      print(e.toString());
+      debugPrint(e.toString());
     }
     notifyListeners();
   }

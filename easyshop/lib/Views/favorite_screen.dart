@@ -46,37 +46,36 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          print("Favorite error for ID $favorite: ${snapshot.error}");
+          debugPrint("Favorite error for ID $favorite: ${snapshot.error}");
           return Center(
             child: Text("Error: ${snapshot.error}"),
           );
         }
         if (!snapshot.hasData || !snapshot.data!.exists) {
-          print("Favorite not found in 'product' collection: $favorite");
+          debugPrint("Favorite not found in 'product' collection: $favorite");
           return const SizedBox.shrink(); // Non mostriamo nulla se il prodotto è sparito
         }
         var productData = 
           snapshot.data!.data() as Map<String, dynamic>?;
-
-        if(productData == null){
-          return const Center(child: Text("No data available for this favorite."),
-          );
+        if (productData == null) {
+          return const Center(child: Text("No data available for this favorite."));
         }
-        // Assicuriamoci che l'ID sia nel map per il toggle
         productData['id'] = snapshot.data!.id;
-          return Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 15, vertical: 8),
+        final int stock = productData['stock'] ?? 0;
+        final bool isOutOfStock = stock <= 0;
+
+        return Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+              child: Opacity(
+                opacity: isOutOfStock ? 0.6 : 1.0,
                 child: GestureDetector(
                   onTap: () {
                     Navigator.push(
-                      context, 
+                      context,
                       MaterialPageRoute(
-                        builder: (context) => ItemDetailsScreen(
-                          grocery: productData,
-                        ),
+                        builder: (context) => ItemDetailsScreen(grocery: productData),
                       ),
                     );
                   },
@@ -97,26 +96,49 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                     ),
                     child: Row(
                       children: [
-                        Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            image: DecorationImage(
-                              fit: BoxFit.cover,
-                              image: NetworkImage(
-                                GithubHelper.convertUrl(productData['image']),
+                        Stack(
+                          children: [
+                            Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: NetworkImage(
+                                    GithubHelper.convertUrl(productData['image']),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                            if (isOutOfStock)
+                              Positioned.fill(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black45,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      "SOLD OUT",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                         const SizedBox(width: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              productData['name'] ?? "Unknown", 
+                              productData['name'] ?? "Unknown",
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -131,31 +153,33 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                               ),
                             ),
                           ],
-                        )
+                        ),
                       ],
                     ),
                   ),
-                ),  
-              ),
-              Positioned(
-                top: 50,
-                right: 35,
-                child: GestureDetector(
-                  onTap: () {
-                    provider.toggleFavorite(productData);
-                  },
-                  child: const Icon(
-                    Icons.delete,
-                    color: Colors.red,
-                    size: 25,
-                  ),
                 ),
-                )
-              ],
-            );
-          });
-        },
-      ),
-    );
-  } 
+              ),
+            ),
+            Positioned(
+              top: 50,
+              right: 35,
+              child: GestureDetector(
+                onTap: () {
+                  provider.toggleFavorite(productData);
+                },
+                child: const Icon(
+                  Icons.delete,
+                  color: Colors.red,
+                  size: 25,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+        );
+      },
+    ),
+  );
+}
 }

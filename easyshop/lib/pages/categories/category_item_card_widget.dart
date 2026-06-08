@@ -24,13 +24,13 @@ class CategoryItemCardWidget extends StatelessWidget{
         Center(
           child: Container(
             decoration: BoxDecoration(
-              color: color.withOpacity(.1),
+              color: color.withValues(alpha: .1),
               borderRadius: BorderRadius.circular(borderRadius)
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
+                SizedBox(
                   height: 90,
                   width: 100,
                   child: SizedBox(

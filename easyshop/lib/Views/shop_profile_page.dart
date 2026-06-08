@@ -37,7 +37,7 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
         _addressController.text = data['position'] ?? '';
       }
     } catch (e) {
-      print("Error loading shop data: $e");
+      debugPrint("Error loading shop data: $e");
     } finally {
       if (mounted) {
         setState(() => isFetchingData = false);
@@ -64,9 +64,11 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
         _passwordController.clear();
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error updating profile: $e"), backgroundColor: Colors.red),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error updating profile: $e"), backgroundColor: Colors.red),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => isLoading = false);

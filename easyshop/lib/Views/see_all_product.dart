@@ -33,7 +33,7 @@ class _SeeAllProductState extends State<SeeAllProduct> {
     try {
       userPosition = await LocationService().getUserPosition();
     } catch (e) {
-      print("Could not fetch user position in SeeAllProduct: $e");
+      debugPrint("Could not fetch user position in SeeAllProduct: $e");
     }
     await fetchShops();
     await fetchAllProduct();
@@ -47,7 +47,7 @@ class _SeeAllProductState extends State<SeeAllProduct> {
         shopData[doc.id] = data;
       }
     } catch (e) {
-      print("Error fetching shops in SeeAllProduct: $e");
+      debugPrint("Error fetching shops in SeeAllProduct: $e");
     }
   }
 
@@ -114,7 +114,7 @@ class _SeeAllProductState extends State<SeeAllProduct> {
         filterItems = groceryItems;
       });
     } catch (e) {
-      print("Error fetching products in SeeAllProduct: $e");
+      debugPrint("Error fetching products in SeeAllProduct: $e");
     } finally {
       setState(() {
         isLoading = false;

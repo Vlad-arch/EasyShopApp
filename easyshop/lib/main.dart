@@ -4,7 +4,7 @@ import 'package:easyshop/Provider/favorite_provider.dart';
 import 'package:easyshop/Views/app_main_screen.dart';
 import 'package:easyshop/Views/shop_main_screen.dart';
 import 'package:easyshop/auth.dart';
-import 'package:easyshop/screens/AuthPage.dart';
+import 'package:easyshop/screens/auth_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';

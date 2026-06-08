@@ -1,14 +1,14 @@
 import 'package:easyshop/Views/admin_page.dart';
 import 'package:easyshop/auth.dart';
-import 'package:easyshop/screens/AboutUsPage.dart';
-import 'package:easyshop/screens/ShopRegistrationPage.dart';
+import 'package:easyshop/screens/about_us_page.dart';
+import 'package:easyshop/screens/shop_registration_page.dart';
 import 'package:easyshop/utils/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AuthPage extends StatefulWidget {
-  const AuthPage({Key? key}) : super(key: key);
+  const AuthPage({super.key});
 
   @override
   State<AuthPage> createState() => _AuthPageState();
@@ -70,9 +70,11 @@ class _AuthPageState extends State<AuthPage> {
       setState(() {
         errorMessage = e.message ?? "Authentication error";
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -231,7 +233,7 @@ class _AuthPageState extends State<AuthPage> {
                             if (e is FirebaseAuthException && e.code == 'google-sign-in-aborted') {
                               // Utente ha chiuso il popup di google
                             } else {
-                              if (mounted) {
+                              if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text("Google Login Error: ${e.toString()}"), backgroundColor: Colors.red),
                                 );
@@ -282,10 +284,12 @@ class _AuthPageState extends State<AuthPage> {
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const ShopRegistrationPage()),
-                        );
+                        if (context.mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const ShopRegistrationPage()),
+                          );
+                        }
                       },
                       child: const Text(
                         "join us",

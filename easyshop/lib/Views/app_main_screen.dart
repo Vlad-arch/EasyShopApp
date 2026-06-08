@@ -9,17 +9,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iconsax/iconsax.dart';
 
-class AppMainScreen extends StatefulWidget{
-  const AppMainScreen({super.key});
-  
+class AppMainScreen extends StatefulWidget {
+  final int initialIndex;
+  const AppMainScreen({super.key, this.initialIndex = 0});
 
   @override
   State<AppMainScreen> createState() => _AppMainScreenState();
-  
 }
 
 class _AppMainScreenState extends State<AppMainScreen> {
-  int selectedIndex = 0;
+  late int selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedIndex = widget.initialIndex;
+  }
   final List pages = [
     const HomePage(),
     const FavoriteScreen(),

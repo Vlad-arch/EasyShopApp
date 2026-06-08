@@ -33,7 +33,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
         isLoading = false;
       });
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       setState(() {
         isLoading = false;
       });
@@ -78,12 +78,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(25),
                         border: Border.all(
-                          color: Colors.grey.withOpacity(0.3),
+                          color: Colors.grey.withValues(alpha: 0.3),
                           width: 1,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
+                            color: Colors.grey.withValues(alpha: 0.1),
                             spreadRadius: 2,
                             blurRadius: 5,
                             offset: const Offset(0, 3),

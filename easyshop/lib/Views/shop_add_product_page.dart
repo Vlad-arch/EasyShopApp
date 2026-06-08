@@ -40,7 +40,7 @@ class _ShopAddProductPageState extends State<ShopAddProductPage> {
         categories = snapshot.docs.map((doc) => doc.data()['name'] as String).toList();
       });
     } catch (e) {
-      print("Error fetching categories: $e");
+      debugPrint("Error fetching categories: $e");
     }
   }
 
@@ -97,9 +97,11 @@ class _ShopAddProductPageState extends State<ShopAddProductPage> {
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error adding product: $e"), backgroundColor: Colors.red),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error adding product: $e"), backgroundColor: Colors.red),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
@@ -130,7 +132,7 @@ class _ShopAddProductPageState extends State<ShopAddProductPage> {
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
                     borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: AppColors.primaryColor.withOpacity(0.5)),
+                    border: Border.all(color: AppColors.primaryColor.withValues(alpha: 0.5)),
                   ),
                   child: _imageFile != null
                       ? ClipRRect(

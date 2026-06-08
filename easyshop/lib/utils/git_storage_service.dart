@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:easyshop/config/secrets.dart';
 import 'package:http/http.dart' as http;
@@ -39,11 +40,11 @@ class GitStorageService {
         // Il GithubHelper si occuperà di convertirlo in URL raw
         return fileName;
       } else {
-        print("Github upload failed: ${response.body}");
+        debugPrint("Github upload failed: ${response.body}");
         return null;
       }
     } catch (e) {
-      print("Error in uploadImage: $e");
+      debugPrint("Error in uploadImage: $e");
       return null;
     }
   }

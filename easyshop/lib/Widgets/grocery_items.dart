@@ -118,7 +118,7 @@ class GroceryItems extends StatelessWidget {
                  width: double.infinity,
                  padding: const EdgeInsets.symmetric(vertical: 6),
                  decoration: BoxDecoration(
-                   color: isOutOfStock ? Colors.red.withOpacity(0.1) : AppColors.primaryColor.withOpacity(0.1),
+                   color: isOutOfStock ? Colors.red.withValues(alpha: 0.1) : AppColors.primaryColor.withValues(alpha: 0.1),
                    borderRadius: BorderRadius.circular(15),
                    border: Border.all(color: isOutOfStock ? Colors.red : AppColors.primaryColor, width: 1),
                  ),

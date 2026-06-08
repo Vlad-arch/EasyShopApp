@@ -21,187 +21,135 @@ class _CartScreenState extends State<CartScreen> {
     CartProvider cartProvider = Provider.of<CartProvider>(context);
     List<CartModel> carts = cartProvider.carts.reversed.toList();
     Size size = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
-      body: SafeArea(child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: List.generate(
-              carts.length, 
-              (index) => CartItems(
-                  cart: carts[index]
-                ),
-            ),
-          ),
-        ),
+      appBar: AppBar(
+        backgroundColor: AppColors.secondaryColor,
+        elevation: 0,
+        title: const Text("My Cart", style: TextStyle(color: Colors.black)),
+        centerTitle: true,
       ),
-      ),
-      bottomSheet: carts.isEmpty 
-        ? Container(
-          color: AppColors.backgroundColor,
-          child: Center(
-            child: Text("Cart empty"),
-          ),
-        )
-      : Container(
-          color: AppColors.backgroundColor,
-          height: size.height * 0.345,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            child: Column(
+      body: carts.isEmpty
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey),
+                  SizedBox(height: 20),
+                  Text("Your cart is empty", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey)),
+                ],
+              ),
+            )
+          : Stack(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Total",
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      "€${cartProvider.totalCart().toStringAsFixed(2)}",
-                      style: const TextStyle(
-                        fontSize: 20,
-                       fontWeight: FontWeight.bold,
-                        color: AppColors.primaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-                const Divider(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Icon(Icons.delivery_dining, color: AppColors.primaryColor),
-                    ),
-                    const Text(
-                      "Delivery charge",
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const Spacer(),
-                    const Text(
-                      "€4.99", 
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryColor,
-                      ),
-                    )
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Checkbox(
-                      value: isEcoFriendly, 
-                      onChanged: (value) {
-                        setState(() {
-                          isEcoFriendly = value ?? false;
-                        });
-                      },
-                      activeColor: AppColors.primaryColor,
-                    ),
-                    const Text(
-                      "Eco-friendly Bag",
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      "€${(carts.length*0.1).toStringAsFixed(2)}", 
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryColor,
-                      ),
-                    )
-                  ],
-                ),
-                SizedBox(
-                  width: size.width*0.75,
-                  child: const Text("Buy paper bags to reduce plastic",
-                  style: TextStyle(
-                    fontSize: 12,
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 10),
+                        ...List.generate(
+                          carts.length,
+                          (index) => CartItems(cart: carts[index]),
+                        ),
+                        SizedBox(height: size.height * 0.4), // Spacer for bottom panel
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 15),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Total Price",
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      "€${(cartProvider.totalCart() + 4.99 + (isEcoFriendly ? (0.1 * carts.length) : 0.0)).toStringAsFixed(2)}",
-                      style: const TextStyle(
-                        fontSize: 20,
-                       fontWeight: FontWeight.bold,
-                        color: AppColors.primaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 15),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ShippingAddressScreen(),
-                      ),
-                    );
-                  },
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
                   child: Container(
-                    height: 55,
-                    alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryColor,
-                      borderRadius: BorderRadius.circular(24),
+                      color: AppColors.backgroundColor,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.7),
-                          spreadRadius: 2, 
-                          blurRadius: 7,
-                          offset: const Offset(0, 2),
-                        )
-                      ]
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, -5),
+                        ),
+                      ],
                     ),
-                    child: const Text(
-                      "Process to checkout",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("Subtotal", style: TextStyle(fontSize: 16, color: Colors.grey)),
+                            Text("€${cartProvider.totalCart().toStringAsFixed(2)}",
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("Delivery Fee", style: TextStyle(fontSize: 16, color: Colors.grey)),
+                            Text("€4.99", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: Checkbox(
+                                    value: isEcoFriendly,
+                                    onChanged: (value) => setState(() => isEcoFriendly = value ?? false),
+                                    activeColor: AppColors.primaryColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text("Eco-friendly Bag", style: TextStyle(fontSize: 14, color: Colors.grey)),
+                              ],
+                            ),
+                            Text("€${(carts.length * 0.1).toStringAsFixed(2)}",
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          child: Divider(),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("Total", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                            Text(
+                              "€${(cartProvider.totalCart() + 4.99 + (isEcoFriendly ? (0.1 * carts.length) : 0.0)).toStringAsFixed(2)}",
+                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primaryColor),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        GestureDetector(
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ShippingAddressScreen())),
+                          child: Container(
+                            height: 55,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Text("Checkout", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                )
-              ],             
+                ),
+              ],
             ),
-          ),
-      ),
     );
   }
 }

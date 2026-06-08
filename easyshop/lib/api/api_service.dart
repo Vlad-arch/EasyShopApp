@@ -4,7 +4,6 @@ import 'package:easyshop/config.dart';
 import 'package:easyshop/models/category_model.dart';
 import 'package:http/http.dart' as http;
 
-import '../config.dart';
 
 class APIService {
   static var client = http.Client();
