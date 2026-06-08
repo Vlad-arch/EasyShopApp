@@ -194,7 +194,7 @@ class ProfileScreen extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Annulla"),
+                  child: const Text("Cancel"),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -208,12 +208,12 @@ class ProfileScreen extends StatelessWidget {
                     } catch (e) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Errore: $e")),
+                          SnackBar(content: Text("Error: $e")),
                         );
                       }
                     }
                   },
-                  child: const Text("Salva"),
+                  child: const Text("Save"),
                 ),
               ],
             );
@@ -244,7 +244,7 @@ class ProfileScreen extends StatelessWidget {
                   stream: FirebaseFirestore.instance.collection('users').doc(Auth().currentUser!.uid).snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
-                      return const Text("Errore durante il caricamento");
+                      return const Text("Error loading data");
                     }
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -255,9 +255,9 @@ class ProfileScreen extends StatelessWidget {
                       userData = snapshot.data!.data() as Map<String, dynamic>;
                     }
                     
-                    final name = userData['name'] ?? "Utente";
-                    final phone = userData['phone'] ?? "Aggiungi numero";
-                    final address = userData['address'] ?? "Aggiungi indirizzo";
+                    final name = userData['name'] ?? "User";
+                    final phone = userData['phone'] ?? "Add phone number";
+                    final address = userData['address'] ?? "Add address";
                     final email = Auth().currentUser!.email ?? "";
 
                     return Column(
@@ -278,10 +278,10 @@ class ProfileScreen extends StatelessWidget {
                           value: name,
                           onTap: () => _showEditDialog(
                             context: context,
-                            title: "Modifica Nome",
+                            title: "Edit Name",
                             currentValue: name,
                             fieldName: "name",
-                            hintText: "Inserisci il tuo nome",
+                            hintText: "Enter your name",
                           ),
                         ),
                         _buildProfileItem(
@@ -290,10 +290,10 @@ class ProfileScreen extends StatelessWidget {
                           value: phone,
                           onTap: () => _showEditDialog(
                             context: context,
-                            title: "Modifica Telefono",
+                            title: "Edit Phone",
                             currentValue: userData['phone'] ?? "",
                             fieldName: "phone",
-                            hintText: "Inserisci il numero di telefono",
+                            hintText: "Enter your phone number",
                             keyboardType: TextInputType.number,
                             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                           ),
@@ -304,10 +304,10 @@ class ProfileScreen extends StatelessWidget {
                           value: address,
                           onTap: () => _showEditDialog(
                             context: context,
-                            title: "Modifica Indirizzo",
+                            title: "Edit Address",
                             currentValue: userData['address'] ?? "",
                             fieldName: "address",
-                            hintText: "Inserisci il tuo indirizzo",
+                            hintText: "Enter your address",
                           ),
                         ),
                       ],
@@ -315,7 +315,7 @@ class ProfileScreen extends StatelessWidget {
                   },
                 )
               else
-                const Text("Nessun utente", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const Text("No user", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
@@ -324,7 +324,7 @@ class ProfileScreen extends StatelessWidget {
                     await Auth().signOut();
                   },
                   icon: const Icon(Icons.logout),
-                  label: const Text("Esci"),
+                  label: const Text("Sign Out"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.redAccent,
                     foregroundColor: Colors.white,

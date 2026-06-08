@@ -58,7 +58,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                               } catch (e) {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text("Errore posizione: $e")),
+                                    SnackBar(content: Text("Location error: $e")),
                                   );
                                 }
                               } finally {
@@ -74,7 +74,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Annulla"),
+                  child: const Text("Cancel"),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -88,12 +88,12 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                     } catch (e) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Errore: $e")),
+                          SnackBar(content: Text("Error: $e")),
                         );
                       }
                     }
                   },
-                  child: const Text("Salva"),
+                  child: const Text("Save"),
                 ),
               ],
             );
@@ -110,7 +110,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text("Gestisci Indirizzi"),
+        title: const Text("Manage Addresses"),
         backgroundColor: AppColors.backgroundColor,
         elevation: 0,
         centerTitle: true,
@@ -122,12 +122,12 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                "Dettagli di spedizione",
+                "Shipping Details",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               const Text(
-                "Per favore, verifica che i tuoi dati siano corretti prima di procedere.",
+                "Please make sure your details are correct before proceeding.",
                 style: TextStyle(color: Colors.grey),
               ),
               const SizedBox(height: 30),
@@ -136,7 +136,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                   stream: FirebaseFirestore.instance.collection('users').doc(Auth().currentUser!.uid).snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
-                      return const Text("Errore durante il caricamento");
+                      return const Text("Error loading data");
                     }
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -147,9 +147,9 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                       userData = snapshot.data!.data() as Map<String, dynamic>;
                     }
                     
-                    final name = userData['name'] ?? "Utente";
-                    final phone = userData['phone'] ?? "Aggiungi numero";
-                    final address = userData['address'] ?? "Aggiungi indirizzo";
+                    final name = userData['name'] ?? "User";
+                    final phone = userData['phone'] ?? "Add phone number";
+                    final address = userData['address'] ?? "Add address";
 
                     return Column(
                       children: [
@@ -159,10 +159,10 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                           value: name,
                           onTap: () => _showEditDialog(
                             context: context,
-                            title: "Modifica Nome",
+                            title: "Edit Name",
                             currentValue: name,
                             fieldName: "name",
-                            hintText: "Inserisci il tuo nome",
+                            hintText: "Enter your name",
                           ),
                         ),
                         _buildInfoItem(
@@ -171,10 +171,10 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                           value: address,
                           onTap: () => _showEditDialog(
                             context: context,
-                            title: "Modifica Indirizzo",
+                            title: "Edit Address",
                             currentValue: userData['address'] ?? "",
                             fieldName: "address",
-                            hintText: "Inserisci il tuo indirizzo",
+                            hintText: "Enter your address",
                           ),
                         ),
                         _buildInfoItem(
@@ -183,10 +183,10 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                           value: phone,
                           onTap: () => _showEditDialog(
                             context: context,
-                            title: "Modifica Telefono",
+                            title: "Edit Phone",
                             currentValue: userData['phone'] ?? "",
                             fieldName: "phone",
-                            hintText: "Inserisci il numero di telefono",
+                            hintText: "Enter your phone number",
                             keyboardType: TextInputType.number,
                             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                           ),
