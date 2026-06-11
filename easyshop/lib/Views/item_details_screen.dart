@@ -338,7 +338,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
             MaterialPageRoute(
               builder: (context) => AppMainScreen(initialIndex: value),
             ),
-            (route) => false,
+            (route) => route.isFirst,
           );
         },
         items: const [
@@ -561,7 +561,7 @@ class _ReviewsWidgetState extends State<ReviewsWidget> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(userName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        ReviewUserDisplayName(userId: userId, fallbackName: userName),
                         Row(
                           children: [
                             ...List.generate(5, (i) => Icon(
@@ -634,6 +634,44 @@ class _ReviewsWidgetState extends State<ReviewsWidget> {
             const Text("Log in to add a review", style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
         ],
       ),
+    );
+  }
+}
+
+class ReviewUserDisplayName extends StatelessWidget {
+  final String userId;
+  final String fallbackName;
+
+  const ReviewUserDisplayName({
+    super.key,
+    required this.userId,
+    required this.fallbackName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (userId.isEmpty) {
+      return Text(
+        fallbackName,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      );
+    }
+    return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
+      builder: (context, snapshot) {
+        String displayName = fallbackName;
+        if (snapshot.hasData && snapshot.data!.exists) {
+          final data = snapshot.data!.data() as Map<String, dynamic>?;
+          final name = data?['name'];
+          if (name != null && name.toString().isNotEmpty) {
+            displayName = name.toString();
+          }
+        }
+        return Text(
+          displayName,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        );
+      },
     );
   }
 }

@@ -29,6 +29,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   Position? userPosition;
   
   bool isLoading = true;
+  bool filterByDistance = true;
   @override
   void initState(){
     super.initState();
@@ -134,6 +135,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       for (var doc in snapshot.docs) {
         final data = doc.data();
         data['id'] = doc.id;
+        data['isWithinRange'] = true; // Default to true
         
         // 1. Proximity Filter
         if (userPosition != null && data['shop'] != null) {
@@ -145,8 +147,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               shopPos.latitude, 
               shopPos.longitude
             );
-            if (distance > 150000) {
-              continue; // Skip only if we are SURE it's > 150km
+            if (distance > 5000) {
+              data['isWithinRange'] = false; // Mark as out of 5km range
             }
           } else {
             // No coordinates for shop? Fallback to VISIBLE for safety
@@ -200,11 +202,27 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       setState(() {
         isLoading = true;
         category = selectedCategory;
-        // Filter from the already proximity-filtered allProducts list
-        groceryItems = allProducts.where((item) => item['category'] == selectedCategory).toList();
+        // Filter from allProducts list and apply proximity range filter if active
+        groceryItems = allProducts.where((item) {
+          final matchCategory = item['category'] == selectedCategory;
+          if (!matchCategory) return false;
+          if (filterByDistance && userPosition != null) {
+            return item['isWithinRange'] == true;
+          }
+          return true;
+        }).toList();
         filteredItems = groceryItems;
         isLoading = false;
       });
+    }
+  }
+
+  void toggleDistanceFilter(bool value) {
+    if (mounted) {
+      setState(() {
+        filterByDistance = value;
+      });
+      filterProductByCategory(category);
     }
   }
 
@@ -241,7 +259,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               child: Row(
                 children: [
                   StreamBuilder<DocumentSnapshot>(
-                    stream: FirebaseFirestore.instance.collection('users').doc(Auth().currentUser?.uid).snapshots(),
+                    stream: Auth().currentUser?.uid != null
+                        ? FirebaseFirestore.instance.collection('users').doc(Auth().currentUser!.uid).snapshots()
+                        : const Stream<DocumentSnapshot>.empty(),
                     builder: (context, snapshot) {
                       String name = "User";
                       if (snapshot.hasData && snapshot.data!.exists) {
@@ -313,7 +333,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: MySearchBar(
-                suggestions: allProducts,
+                suggestions: filterByDistance && userPosition != null
+                    ? allProducts.where((p) => p['isWithinRange'] == true).toList()
+                    : allProducts,
                 onSearch: searchProducts,
                 onSuggestionSelected: (product) {
                   Navigator.push(
@@ -325,6 +347,31 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 },
               ),
             ),
+            const SizedBox(height: 15),
+            if (userPosition != null && !isLoading)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.location_on, color: AppColors.primaryColor, size: 20),
+                        SizedBox(width: 5),
+                        Text(
+                          "Filtra entro 5 km",
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                    Switch(
+                      value: filterByDistance,
+                      activeColor: AppColors.primaryColor,
+                      onChanged: toggleDistanceFilter,
+                    ),
+                  ],
+                ),
+              ),
             const SizedBox(height: 20),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -65,6 +65,9 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
+        if (snapshot.hasError) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
         if (snapshot.hasData && snapshot.data!.exists) {
           final data = snapshot.data!.data() as Map<String, dynamic>;
           if (data['isShop'] == true || data['role'] == 'shop') {

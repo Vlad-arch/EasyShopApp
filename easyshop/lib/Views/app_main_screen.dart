@@ -403,10 +403,8 @@ class ProfileScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () async {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
                     await Auth().signOut();
-                    if (context.mounted) {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    }
                   },
                   icon: const Icon(Icons.logout),
                   label: const Text("Sign Out"),

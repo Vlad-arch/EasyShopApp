@@ -10,7 +10,7 @@ class FavoriteProvider with ChangeNotifier{
   FavoriteProvider() {
     // Listen for auth changes and reload favorites automatically
     FirebaseAuth.instance.authStateChanges().listen((user) {
-      loadFavorites();
+      loadFavorites(user);
     });
   }
 
@@ -34,9 +34,9 @@ class FavoriteProvider with ChangeNotifier{
     return _favoriteIds.contains(productId);
   }
 
-  Future<void> loadFavorites() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
+  Future<void> loadFavorites([User? user]) async {
+    final currentUser = user ?? FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
       _favoriteIds = [];
       notifyListeners();
       return;
@@ -45,7 +45,7 @@ class FavoriteProvider with ChangeNotifier{
     try {
       QuerySnapshot snapshot = await _firestore
           .collection("users")
-          .doc(user.uid)
+          .doc(currentUser.uid)
           .collection("favorites")
           .get();
       _favoriteIds = snapshot.docs.map((doc) => doc.id).toList();

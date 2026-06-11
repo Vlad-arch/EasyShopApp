@@ -6,6 +6,7 @@ import 'package:easyshop/utils/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:easyshop/utils/location_service.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -18,9 +19,35 @@ class _AuthPageState extends State<AuthPage> {
   final TextEditingController _name = TextEditingController();
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
+  final TextEditingController _address = TextEditingController();
   bool isLogin = true;
   bool isLoading = false;
+  bool isDetectingLocation = false;
   String errorMessage = '';
+
+  Future<void> _detectLocation() async {
+    setState(() => isDetectingLocation = true);
+    try {
+      final address = await LocationService().getCurrentAddress();
+      if (address != null) {
+        setState(() => _address.text = address);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Could not detect location"), backgroundColor: Colors.orange),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => isDetectingLocation = false);
+    }
+  }
 
   Future<void> authAction() async {
     setState(() {
@@ -64,6 +91,7 @@ class _AuthPageState extends State<AuthPage> {
           email: _email.text.trim(),
           password: _password.text.trim(),
           name: _name.text.trim(),
+          address: _address.text.trim().isNotEmpty ? _address.text.trim() : null,
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -145,6 +173,30 @@ class _AuthPageState extends State<AuthPage> {
                   decoration: InputDecoration(
                     labelText: 'Full Name',
                     prefixIcon: const Icon(Icons.person_outline),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _address,
+                  keyboardType: TextInputType.streetAddress,
+                  decoration: InputDecoration(
+                    labelText: 'Address',
+                    prefixIcon: const Icon(Icons.location_on_outlined),
+                    suffixIcon: isDetectingLocation
+                        ? const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : IconButton(
+                            icon: const Icon(Icons.my_location, color: AppColors.primaryColor),
+                            onPressed: _detectLocation,
+                            tooltip: "Detect Location",
+                          ),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
@@ -315,6 +367,7 @@ class _AuthPageState extends State<AuthPage> {
     _name.dispose();
     _email.dispose();
     _password.dispose();
+    _address.dispose();
     super.dispose();
   }
 }

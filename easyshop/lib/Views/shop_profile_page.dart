@@ -197,10 +197,8 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
             Center(
               child: TextButton.icon(
                 onPressed: () async {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
                   await Auth().signOut();
-                  if (context.mounted) {
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  }
                 },
                 icon: const Icon(Icons.logout, color: Colors.red),
                 label: const Text("Logout", style: TextStyle(color: Colors.red)),

@@ -46,3 +46,4 @@ app.*.map.json
 
 # Secrets and local configuration
 lib/config/secrets.dart
+app/EasyShop/backend/serviceAccountKey.json

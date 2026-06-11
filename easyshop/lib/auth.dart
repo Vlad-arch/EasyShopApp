@@ -24,6 +24,7 @@ class Auth {
     {required String email,
      required String password,
      required String name,
+     String? address,
     }) async {
     UserCredential credential = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
     
@@ -36,6 +37,7 @@ class Auth {
         'uid': credential.user!.uid,
         'email': email,
         'name': name,
+        'address': address,
         'role': 'customer',
         'createdAt': FieldValue.serverTimestamp(),
       });
@@ -124,8 +126,28 @@ class Auth {
     }
   }
 
-  Future<void> signOut() async{
+  Future<void> signOut() async {
+    final user = _firebaseAuth.currentUser;
+    bool isGoogleUser = false;
+    if (user != null) {
+      for (final userInfo in user.providerData) {
+        if (userInfo.providerId == 'google.com') {
+          isGoogleUser = true;
+          break;
+        }
+      }
+    }
+
     await _firebaseAuth.signOut();
+
+    if (isGoogleUser) {
+      try {
+        final GoogleSignIn googleSignIn = GoogleSignIn();
+        await googleSignIn.signOut();
+      } catch (e) {
+        debugPrint("Error signing out from Google: $e");
+      }
+    }
   }
 
   Future<void> updateShopProfile({
