@@ -1,7 +1,9 @@
 # Private credentials - NEVER commit these
 backend/serviceAccountKey.json
-
-# Flutter
+backend/.firebase-credentials.json
+serviceAccountKey.json
+.env
+*.json.bak
 **/android/local.properties
 **/android/.gradle
 **/android/key.properties

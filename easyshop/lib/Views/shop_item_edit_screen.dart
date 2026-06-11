@@ -98,15 +98,56 @@ class _ShopItemEditScreenState extends State<ShopItemEditScreen> {
     }
   }
 
+  Future<void> _confirmDelete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Product?"),
+        content: const Text("Are you sure you want to remove this product from your inventory?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true), 
+            child: const Text("Delete", style: TextStyle(color: Colors.red))
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      setState(() => isLoading = true);
+      try {
+        await FirebaseFirestore.instance.collection('product').doc(widget.grocery['id']).delete();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Product deleted")));
+          Navigator.pop(context, true);
+        }
+      } catch (e) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      } finally {
+        if (mounted) setState(() => isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool isAlreadyMyShop = widget.grocery['shop'] == Auth().currentUser!.uid;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
         backgroundColor: AppColors.secondaryColor,
         elevation: 0,
-        title: const Text("Edit Product", style: TextStyle(color: Colors.black)),
+        title: Text(isAlreadyMyShop ? "Edit Product" : "Clone & Customize", style: const TextStyle(color: Colors.black)),
         centerTitle: true,
+        actions: [
+          if (isAlreadyMyShop)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              onPressed: _confirmDelete,
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -115,6 +156,28 @@ class _ShopItemEditScreenState extends State<ShopItemEditScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (!isAlreadyMyShop)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.blue),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          "This is a global product. Saving changes will create a customized copy for your shop.",
+                          style: TextStyle(fontSize: 14, color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               Center(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15),

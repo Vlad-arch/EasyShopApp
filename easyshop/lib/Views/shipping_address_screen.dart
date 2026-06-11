@@ -200,19 +200,82 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Success snackbar
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Your order has been processed, you will receive it as soon as possible."),
-                        duration: Duration(seconds: 3),
-                        backgroundColor: AppColors.primaryColor,
-                      ),
-                    );
-                    // Clear cart
-                    cartProvider.clearCart();
-                    // Go back to Home
-                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  onPressed: () async {
+                    try {
+                      // 1. Fetch fresh user data for validation
+                      final userDoc = await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(Auth().currentUser!.uid)
+                          .get();
+                      
+                      if (!userDoc.exists) throw Exception("User data not found");
+                      
+                      final userData = userDoc.data()!;
+                      final String? address = userData['address'];
+                      final String? phone = userData['phone'];
+
+                      // 2. Validation
+                      if (address == null || address.trim().isEmpty || 
+                          phone == null || phone.trim().isEmpty) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please complete your address and phone number before confirming."),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
+                      }
+                        return;
+                      }
+
+                      // 3. Stock Reduction (Atomic Batch)
+                      final batch = FirebaseFirestore.instance.batch();
+                      final cartItems = cartProvider.carts;
+                      
+                      debugPrint("Processing stock reduction for ${cartItems.length} items");
+                      
+                      for (var item in cartItems) {
+                        final String? productId = item.grocery['id'];
+                        final quantity = item.quantity;
+                        
+                        if (productId == null || productId.isEmpty) {
+                          debugPrint("WARNING: Skipping stock reduction for item without ID: ${item.grocery['name']}");
+                          continue;
+                        }
+
+                        debugPrint("Reducing stock for product: $productId by $quantity");
+                        final productRef = FirebaseFirestore.instance.collection('product').doc(productId);
+                        
+                        // Use FieldValue.increment to ensure atomicity
+                        batch.update(productRef, {
+                          'stock': FieldValue.increment(-quantity),
+                        });
+                      }
+
+                      await batch.commit();
+                      debugPrint("Stock reduction batch committed successfully");
+
+                      // 4. Finalize Order
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Your order has been processed, you will receive it as soon as possible."),
+                            duration: Duration(seconds: 3),
+                            backgroundColor: AppColors.primaryColor,
+                          ),
+                        );
+                        // Clear cart
+                        cartProvider.clearCart();
+                        // Go back to Home
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Order failed: $e"), backgroundColor: Colors.red),
+                        );
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,

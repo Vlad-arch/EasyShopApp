@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easyshop/auth.dart';
 import 'package:easyshop/utils/colors.dart';
+import 'package:easyshop/utils/location_service.dart';
 import 'package:flutter/material.dart';
 
 class ShopProfilePage extends StatefulWidget {
@@ -19,6 +20,31 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
 
   bool isLoading = false;
   bool isFetchingData = true;
+  bool isDetectingLocation = false;
+
+  Future<void> _detectLocation() async {
+    setState(() => isDetectingLocation = true);
+    try {
+      final address = await LocationService().getCurrentAddress();
+      if (address != null) {
+        setState(() => _addressController.text = address);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Could not detect location"), backgroundColor: Colors.orange),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => isDetectingLocation = false);
+    }
+  }
 
   @override
   void initState() {
@@ -131,6 +157,20 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
                 labelText: "Shop Address",
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 prefixIcon: const Icon(Icons.location_on_outlined),
+                suffixIcon: isDetectingLocation
+                    ? const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : IconButton(
+                        icon: const Icon(Icons.my_location, color: AppColors.primaryColor),
+                        onPressed: _detectLocation,
+                        tooltip: "Detect Location",
+                      ),
                 helperText: "Coordinates will be updated automatically",
               ),
               validator: (val) => val == null || val.isEmpty ? "Required" : null,
@@ -156,7 +196,12 @@ class _ShopProfilePageState extends State<ShopProfilePage> {
             const SizedBox(height: 20),
             Center(
               child: TextButton.icon(
-                onPressed: () => Auth().signOut(),
+                onPressed: () async {
+                  await Auth().signOut();
+                  if (context.mounted) {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  }
+                },
                 icon: const Icon(Icons.logout, color: Colors.red),
                 label: const Text("Logout", style: TextStyle(color: Colors.red)),
               ),

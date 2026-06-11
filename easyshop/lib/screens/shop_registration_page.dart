@@ -1,5 +1,6 @@
 import 'package:easyshop/auth.dart';
 import 'package:easyshop/utils/colors.dart';
+import 'package:easyshop/utils/location_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -17,7 +18,36 @@ class _ShopRegistrationPageState extends State<ShopRegistrationPage> {
   final TextEditingController _addressController = TextEditingController();
   
   bool isLoading = false;
+  bool isDetectingLocation = false;
   String errorMessage = '';
+
+  Future<void> _detectLocation() async {
+    setState(() {
+      isDetectingLocation = true;
+      errorMessage = '';
+    });
+
+    try {
+      final address = await LocationService().getCurrentAddress();
+      if (address != null) {
+        setState(() {
+          _addressController.text = address;
+        });
+      } else {
+        setState(() {
+          errorMessage = "Could not detect location. Please type manually.";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = "Error detecting location: $e";
+      });
+    } finally {
+      setState(() {
+        isDetectingLocation = false;
+      });
+    }
+  }
 
   Future<void> registerShop() async {
     if (_nameController.text.trim().isEmpty ||
@@ -138,6 +168,20 @@ class _ShopRegistrationPageState extends State<ShopRegistrationPage> {
                 decoration: InputDecoration(
                   labelText: 'Shop Address',
                   prefixIcon: const Icon(Icons.location_on_outlined),
+                  suffixIcon: isDetectingLocation
+                      ? const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : IconButton(
+                          icon: const Icon(Icons.my_location, color: AppColors.primaryColor),
+                          onPressed: _detectLocation,
+                          tooltip: "Detect Location",
+                        ),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   helperText: 'e.g., 123 Main St, New York',
                 ),

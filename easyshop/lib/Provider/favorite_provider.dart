@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -7,7 +8,10 @@ class FavoriteProvider with ChangeNotifier{
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<String> get favorites => _favoriteIds;
   FavoriteProvider() {
-    loadFavorites();
+    // Listen for auth changes and reload favorites automatically
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      loadFavorites();
+    });
   }
 
   void toggleFavorite(Map<String, dynamic> product)async{
@@ -30,36 +34,62 @@ class FavoriteProvider with ChangeNotifier{
     return _favoriteIds.contains(productId);
   }
 
-  Future<void> _addFavorite(String productId) async {
+  Future<void> loadFavorites() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      _favoriteIds = [];
+      notifyListeners();
+      return;
+    }
+
     try {
-      await _firestore.collection("productFavorite").doc(productId).set({
-        'isFavorite': true,
-        "productId":productId,
-        });
+      QuerySnapshot snapshot = await _firestore
+          .collection("users")
+          .doc(user.uid)
+          .collection("favorites")
+          .get();
+      _favoriteIds = snapshot.docs.map((doc) => doc.id).toList();
     } catch (e) {
-      debugPrint(e.toString());
+      _favoriteIds = [];
+      debugPrint("Error loading favorites: $e");
+    }
+    notifyListeners();
+  }
+
+  Future<void> _addFavorite(String productId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      await _firestore
+          .collection("users")
+          .doc(user.uid)
+          .collection("favorites")
+          .doc(productId)
+          .set({
+        'isFavorite': true,
+        "productId": productId,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint("Error adding favorite: $e");
     }
   }
 
   Future<void> _removeFavorite(String productId) async {
-    try {
-      await _firestore.collection("productFavorite").doc(productId).delete();
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-  }
-  
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-  Future<void> loadFavorites() async {
     try {
-      QuerySnapshot snapshot =
-        await _firestore.collection("productFavorite").get();
-      _favoriteIds = snapshot.docs.map((doc) => doc.id).toList();
+      await _firestore
+          .collection("users")
+          .doc(user.uid)
+          .collection("favorites")
+          .doc(productId)
+          .delete();
     } catch (e) {
-      _favoriteIds = [];
-      debugPrint(e.toString());
+      debugPrint("Error removing favorite: $e");
     }
-    notifyListeners();
   }
 
   static FavoriteProvider of(BuildContext context, {bool listen = true}) {

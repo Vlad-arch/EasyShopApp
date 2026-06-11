@@ -94,7 +94,13 @@ class _AdminPageState extends State<AdminPage> {
         // Create a unique ID based on name and category to prevent duplicates
         final String id = "${prod['name']}_${prod['category']}".toLowerCase().replaceAll(" ", "_");
         final docRef = FirebaseFirestore.instance.collection("product").doc(id);
-        batch.set(docRef, prod);
+        
+        // Add default stock if missing
+        Map<String, dynamic> prodToSeed = Map.from(prod);
+        prodToSeed['stock'] = prodToSeed['stock'] ?? 100; // Default stock for seeded items
+        prodToSeed['id'] = id; // Ensure 'id' field is present in the document data too
+        
+        batch.set(docRef, prodToSeed);
       }
       await batch.commit();
       _showSuccess("Products seeded successfully!");

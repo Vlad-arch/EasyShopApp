@@ -178,7 +178,7 @@ class ProfileScreen extends StatelessWidget {
                               } catch (e) {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text("Errore posizione: $e")),
+                                    SnackBar(content: Text("Location error: $e")),
                                   );
                                 }
                               } finally {
@@ -200,10 +200,17 @@ class ProfileScreen extends StatelessWidget {
                   onPressed: () async {
                     final newValue = controller.text.trim();
                     try {
-                      await FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(Auth().currentUser!.uid)
-                          .update({fieldName: newValue});
+                      final user = Auth().currentUser;
+                      if (user != null) {
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(user.uid)
+                            .set({fieldName: newValue}, SetOptions(merge: true));
+                        
+                        if (fieldName == 'name') {
+                          await user.updateDisplayName(newValue);
+                        }
+                      }
                       if (context.mounted) Navigator.pop(context);
                     } catch (e) {
                       if (context.mounted) {
@@ -214,6 +221,69 @@ class ProfileScreen extends StatelessWidget {
                     }
                   },
                   child: const Text("Save"),
+                ),
+              ],
+            );
+          }
+        );
+      },
+    );
+  }
+
+  Future<void> _showPasswordDialog(BuildContext context) async {
+    final TextEditingController controller = TextEditingController();
+    bool isLoading = false;
+
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text("Change Password"),
+              content: TextField(
+                controller: controller,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  hintText: "Enter new password",
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading ? null : () async {
+                    final newPassword = controller.text.trim();
+                    if (newPassword.length < 6) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Password must be at least 6 characters")),
+                      );
+                      return;
+                    }
+                    setDialogState(() => isLoading = true);
+                    try {
+                      await Auth().changePassword(newPassword);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Password updated successfully!")),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Error: $e")),
+                        );
+                      }
+                    } finally {
+                      setDialogState(() => isLoading = false);
+                    }
+                  },
+                  child: isLoading 
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text("Update"),
                 ),
               ],
             );
@@ -239,89 +309,104 @@ class ProfileScreen extends StatelessWidget {
                 child: Icon(Icons.person, size: 60, color: Colors.grey),
               ),
               const SizedBox(height: 20),
-              if (Auth().currentUser != null)
-                StreamBuilder<DocumentSnapshot>(
-                  stream: FirebaseFirestore.instance.collection('users').doc(Auth().currentUser!.uid).snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return const Text("Error loading data");
-                    }
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    
-                    Map<String, dynamic> userData = {};
-                    if (snapshot.hasData && snapshot.data!.exists) {
-                      userData = snapshot.data!.data() as Map<String, dynamic>;
-                    }
-                    
-                    final name = userData['name'] ?? "User";
-                    final phone = userData['phone'] ?? "Add phone number";
-                    final address = userData['address'] ?? "Add address";
-                    final email = Auth().currentUser!.email ?? "";
+              Builder(
+                builder: (context) {
+                  final user = Auth().currentUser;
+                  if (user != null) {
+                    return StreamBuilder<DocumentSnapshot>(
+                      stream: FirebaseFirestore.instance.collection('users').doc(user.uid).snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return const Text("Error loading data");
+                        }
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
 
-                    return Column(
-                      children: [
-                        Text(
-                          name,
-                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          email,
-                          style: const TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                        const SizedBox(height: 30),
-                        _buildProfileItem(
-                          icon: Icons.person_outline,
-                          title: "Nome",
-                          value: name,
-                          onTap: () => _showEditDialog(
-                            context: context,
-                            title: "Edit Name",
-                            currentValue: name,
-                            fieldName: "name",
-                            hintText: "Enter your name",
-                          ),
-                        ),
-                        _buildProfileItem(
-                          icon: Icons.phone_outlined,
-                          title: "Telefono",
-                          value: phone,
-                          onTap: () => _showEditDialog(
-                            context: context,
-                            title: "Edit Phone",
-                            currentValue: userData['phone'] ?? "",
-                            fieldName: "phone",
-                            hintText: "Enter your phone number",
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                          ),
-                        ),
-                        _buildProfileItem(
-                          icon: Icons.location_on_outlined,
-                          title: "Indirizzo",
-                          value: address,
-                          onTap: () => _showEditDialog(
-                            context: context,
-                            title: "Edit Address",
-                            currentValue: userData['address'] ?? "",
-                            fieldName: "address",
-                            hintText: "Enter your address",
-                          ),
-                        ),
-                      ],
+                        Map<String, dynamic> userData = {};
+                        if (snapshot.hasData && snapshot.data!.exists) {
+                          userData = snapshot.data!.data() as Map<String, dynamic>;
+                        }
+
+                        final name = userData['name'] ?? "User";
+                        final phone = userData['phone'] ?? "Add phone number";
+                        final address = userData['address'] ?? "Add address";
+                        final email = user.email ?? "";
+
+                        return Column(
+                          children: [
+                            Text(
+                              name,
+                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              email,
+                              style: const TextStyle(fontSize: 16, color: Colors.grey),
+                            ),
+                            const SizedBox(height: 30),
+                            _buildProfileItem(
+                              icon: Icons.person_outline,
+                              title: "Name",
+                              value: name,
+                              onTap: () => _showEditDialog(
+                                context: context,
+                                title: "Edit Name",
+                                currentValue: name,
+                                fieldName: "name",
+                                hintText: "Enter your name",
+                              ),
+                            ),
+                            _buildProfileItem(
+                              icon: Icons.phone_outlined,
+                              title: "Phone",
+                              value: phone,
+                              onTap: () => _showEditDialog(
+                                context: context,
+                                title: "Edit Phone",
+                                currentValue: userData['phone'] ?? "",
+                                fieldName: "phone",
+                                hintText: "Enter your phone number",
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              ),
+                            ),
+                            _buildProfileItem(
+                              icon: Icons.location_on_outlined,
+                              title: "Address",
+                              value: address,
+                              onTap: () => _showEditDialog(
+                                context: context,
+                                title: "Edit Address",
+                                currentValue: userData['address'] ?? "",
+                                fieldName: "address",
+                                hintText: "Enter your address",
+                              ),
+                            ),
+                            _buildProfileItem(
+                              icon: Icons.lock_outline,
+                              title: "Security",
+                              value: "Change Password",
+                              onTap: () => _showPasswordDialog(context),
+                            ),
+                          ],
+                        );
+                      },
                     );
-                  },
-                )
-              else
-                const Text("No user", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  } else {
+                    return const Text("No user logged in", style: TextStyle(fontSize: 18));
+                  }
+                },
+              ),
               const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () async {
                     await Auth().signOut();
+                    if (context.mounted) {
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    }
                   },
                   icon: const Icon(Icons.logout),
                   label: const Text("Sign Out"),

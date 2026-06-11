@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
               return const Scaffold(body: Center(child: CircularProgressIndicator()));
             }
             if (snapshot.hasData) {
-              return const AuthWrapper();
+              return AuthWrapper(uid: snapshot.data!.uid);
             } else {
               return const AuthPage();
             }
@@ -54,19 +54,20 @@ class MyApp extends StatelessWidget {
 }
 
 class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
+  final String uid;
+  const AuthWrapper({super.key, required this.uid});
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance.collection('users').doc(Auth().currentUser!.uid).get(),
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
         if (snapshot.hasData && snapshot.data!.exists) {
           final data = snapshot.data!.data() as Map<String, dynamic>;
-          if (data['isShop'] == true) {
+          if (data['isShop'] == true || data['role'] == 'shop') {
             return const ShopMainScreen();
           }
         }

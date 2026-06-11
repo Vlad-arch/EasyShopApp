@@ -115,6 +115,17 @@ def add_review():
     user_id = request.user['uid']
     user_name = request.user.get('name', request.user.get('email', 'Anonymous'))
 
+    # Try to get name from Firestore for better accuracy
+    try:
+        from firebase_admin import firestore
+        db = firestore.client()
+        user_doc = db.collection('users').document(user_id).get()
+        if user_doc.exists:
+            user_doc_data = user_doc.to_dict()
+            user_name = user_doc_data.get('name', user_name)
+    except Exception as e:
+        print(f"Error fetching Firestore name: {e}")
+
     try:
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()

@@ -19,7 +19,7 @@ class _ShopHomePageState extends State<ShopHomePage> {
   List<Map<String, dynamic>> filteredItems = [];
   List<String> categories = ['All'];
   bool isLoading = true;
-  bool showMyShopOnly = false;
+  bool showMyShopOnly = true;
   String searchQuery = "";
 
   @override
@@ -131,15 +131,15 @@ class _ShopHomePageState extends State<ShopHomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "Market Inventory",
+                "My Inventory",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               FilterChip(
-                label: const Text("My Products"),
-                selected: showMyShopOnly,
+                label: const Text("Show Global Catalogs"),
+                selected: !showMyShopOnly,
                 onSelected: (val) {
                   setState(() {
-                    showMyShopOnly = val;
+                    showMyShopOnly = !val;
                     applyFilters();
                   });
                 },

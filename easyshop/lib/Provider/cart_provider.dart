@@ -1,8 +1,17 @@
 import 'package:easyshop/Provider/Model/cart_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CartProvider with ChangeNotifier {
   List<CartModel> _carts = [];
+
+  CartProvider() {
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user == null) {
+        clearCart();
+      }
+    });
+  }
   List<CartModel> get carts => _carts;
   set carts(List<CartModel> carts) {
     _carts = carts;

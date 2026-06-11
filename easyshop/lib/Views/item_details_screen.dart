@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easyshop/Provider/cart_provider.dart';
 import 'package:easyshop/Views/cart_screen.dart';
 import 'package:easyshop/Provider/favorite_provider.dart';
@@ -23,11 +24,33 @@ class ItemDetailsScreen extends StatefulWidget {
 class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
   double? _averageRating;
   int _totalReviews = 0;
+  String? _shopName;
 
   @override
   void initState() {
     super.initState();
     _averageRating = (widget.grocery['rating'] ?? 0.0).toDouble();
+    _fetchShopName();
+  }
+
+  Future<void> _fetchShopName() async {
+    final shopId = widget.grocery['shop'];
+    if (shopId == null) return;
+
+    try {
+      final doc = await FirebaseFirestore.instance.collection('shops').doc(shopId).get();
+      if (doc.exists) {
+        if (mounted) {
+          setState(() {
+            _shopName = doc.data()?['name'] ?? shopId;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _shopName = shopId);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _shopName = shopId);
+    }
   }
 
   void _updateRating(double avg, int count) {
@@ -151,6 +174,25 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                     fontWeight: FontWeight.w500,
                   ),
               ),
+              if (_shopName != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.store, size: 18, color: Colors.grey),
+                      const SizedBox(width: 5),
+                      Text(
+                        _shopName!,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               if (isOutOfStock)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 5),

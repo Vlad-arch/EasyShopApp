@@ -24,15 +24,19 @@ class Auth {
     {required String email,
      required String password,
      required String name,
-    }) async{
+    }) async {
     UserCredential credential = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
     
-    // Create Firestore document with user data
     if (credential.user != null) {
+      // 1. Update display name in Firebase Auth
+      await credential.user!.updateDisplayName(name);
+      
+      // 2. Create Firestore document with user data
       await _firestore.collection('users').doc(credential.user!.uid).set({
         'uid': credential.user!.uid,
         'email': email,
         'name': name,
+        'role': 'customer',
         'createdAt': FieldValue.serverTimestamp(),
       });
     }
@@ -52,7 +56,10 @@ class Auth {
     if (credential.user != null) {
       final String uid = credential.user!.uid;
 
-      // Geocode the address
+      // 1. Update display name in Firebase Auth
+      await credential.user!.updateDisplayName(name);
+
+      // 2. Geocode the address
       double? lat;
       double? lng;
       try {
@@ -65,16 +72,17 @@ class Auth {
         debugPrint("Geocoding failed during shop registration: $e");
       }
 
-      // Create Firestore document with user data
+      // 3. Create Firestore document with user data
       await _firestore.collection('users').doc(uid).set({
         'uid': uid,
         'email': email,
         'name': name,
         'isShop': true,
+        'role': 'shop',
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // Create shop document
+      // 4. Create shop document
       await _firestore.collection('shops').doc(uid).set({
         'id': uid,
         'name': name,
@@ -88,7 +96,9 @@ class Auth {
   }
 
   Future<void> signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+    await googleSignIn.signOut();
+    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
     if (googleUser == null) {
       throw FirebaseAuthException(code: "google-sign-in-aborted", message: "Autenticazione con Google annullata.");
     }
@@ -99,12 +109,16 @@ class Auth {
     );
     final UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
 
-    // Salva un nome utente fittizio (fornito dall'account Google) o reale se è la prima registrazione
-    if (userCredential.additionalUserInfo?.isNewUser ?? false) {
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
+    // Ensure the document exists in Firestore
+    final docRef = _firestore.collection('users').doc(userCredential.user!.uid);
+    final docSnapshot = await docRef.get();
+
+    if (!docSnapshot.exists) {
+      await docRef.set({
         'uid': userCredential.user!.uid,
         'email': userCredential.user!.email,
         'name': userCredential.user!.displayName ?? "Utente Google",
+        'role': 'customer',
         'createdAt': FieldValue.serverTimestamp(),
       });
     }
@@ -123,10 +137,11 @@ class Auth {
     User? user = _firebaseAuth.currentUser;
     if (user == null) throw Exception("User not logged in");
 
-    // 1. Update Auth Email
+    // 1. Update Auth Email & DisplayName
     if (email != user.email) {
       await user.verifyBeforeUpdateEmail(email);
     }
+    await user.updateDisplayName(name);
 
     // 2. Update Auth Password
     if (password != null && password.isNotEmpty) {
@@ -160,5 +175,11 @@ class Auth {
     }
 
     await _firestore.collection('shops').doc(user.uid).update(shopUpdate);
+  }
+
+  Future<void> changePassword(String newPassword) async {
+    User? user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception("User not logged in");
+    await user.updatePassword(newPassword);
   }
 }

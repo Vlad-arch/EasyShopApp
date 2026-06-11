@@ -135,7 +135,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         final data = doc.data();
         data['id'] = doc.id;
         
-        // Proximity Filter
+        // 1. Proximity Filter
         if (userPosition != null && data['shop'] != null) {
           final shopPos = shopCoordinates[data['shop']];
           if (shopPos != null) {
@@ -146,17 +146,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               shopPos.longitude
             );
             if (distance > 150000) {
-              continue; // Skip if > 150km
+              continue; // Skip only if we are SURE it's > 150km
             }
           } else {
-            // No coordinates for shop? Treat as far/missing
-            continue;
+            // No coordinates for shop? Fallback to VISIBLE for safety
+            debugPrint("No coordinates for shop ${data['shop']}, showing product anyway.");
           }
         } else {
-          // No user position or no shop assigned? Skip to trigger "No products in area"
-          continue;
+          // No user position or no shop assigned? 
+          // Show products anyway but the UI will show a location warning
+          debugPrint("User location missing or product has no shop, showing anyway.");
         }
-        // 3. Stock Filter
+
+        // 2. Stock Filter
         final int stock = (data['stock'] as num?)?.toInt() ?? 0;
         if (stock <= 0) {
           continue; // Skip sold-out products for consumers
@@ -282,6 +284,31 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 ),
               ),
             ),
+            const SizedBox(height: 15),
+            if (userPosition == null && !isLoading)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.5)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.location_off, color: Colors.orange, size: 20),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          "Location unavailable. Showing all products regardless of distance.",
+                          style: TextStyle(fontSize: 13, color: Colors.orange, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             const SizedBox(height: 15),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15),

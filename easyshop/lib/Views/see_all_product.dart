@@ -81,7 +81,7 @@ class _SeeAllProductState extends State<SeeAllProduct> {
                 (shop['lat'] as num).toDouble(),
                 (shop['lng'] as num).toDouble(),
               );
-              if (distance > 150000) continue; // Skip if > 150km
+              if (distance > 150000) continue; // Skip only if we are SURE it's > 150km
             } else {
               // Fallback to dynamic geocoding
               final address = shop['position'];
@@ -92,19 +92,24 @@ class _SeeAllProductState extends State<SeeAllProduct> {
                     shopAddress: address,
                     radiusKm: 150.0,
                   );
-                  if (!isNearby) continue;
+                  if (!isNearby) {
+                    // However, if we're not sure, let's keep it for safety if geocoding is flaky
+                    // But here isStoreNearby already returns a bool.
+                    // If it's false, we skip.
+                    continue; 
+                  }
                 } catch (e) {
-                  continue;
+                   debugPrint("Geocoding failed for shop ${data['shop']}, showing anyway.");
                 }
               } else {
-                continue; // No address or coordinates
+                debugPrint("Shop has no address, showing anyway.");
               }
             }
           } else {
-            continue; // Shop document missing
+             debugPrint("Shop document missing for ${data['shop']}, showing anyway.");
           }
         } else {
-          continue; // User position or product shop missing
+           debugPrint("User location missing or product has no shop, showing anyway.");
         }
         products.add(data);
       }
@@ -189,6 +194,30 @@ class _SeeAllProductState extends State<SeeAllProduct> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (userPosition == null && !isLoading && groceryItems.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 15),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.orange.withValues(alpha: 0.5)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.location_off, color: Colors.orange, size: 20),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                "Location unavailable. Showing all products.",
+                                style: TextStyle(fontSize: 13, color: Colors.orange, fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   MySearchBar(
                     suggestions: groceryItems,
                     onSearch: searchfilterItems,
